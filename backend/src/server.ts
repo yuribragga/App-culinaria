@@ -6,17 +6,13 @@ import recipeRoutes from './routes/recipeRoutes';
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Rotas de autenticação
 app.use('/auth', authRoutes);
 
-// Rotas de receitas
 app.use('/recipes', recipeRoutes);
 
-// Inicializar o banco de dados e iniciar o servidor
 AppDataSource.initialize()
   .then(() => {
     console.log('Banco de dados conectado!');

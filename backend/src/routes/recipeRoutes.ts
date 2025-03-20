@@ -4,13 +4,11 @@ import { authenticateToken } from '../middlewares/authMiddleware';
 
 const router = Router();
 
-// Rotas públicas (não precisam de autenticação)
-router.get('/', listRecipes); // Listar todas as receitas
-router.get('/:id', getRecipeById); // Buscar receita por ID
+router.get('/', listRecipes); 
+router.get('/:id', getRecipeById); 
 
-// Rotas protegidas (precisam de autenticação)
-router.post('/', authenticateToken, createRecipe); // Criar receita
-router.put('/:id', authenticateToken, updateRecipe); // Atualizar receita
-router.delete('/:id', authenticateToken, deleteRecipe); // Excluir receita
+router.post('/', authenticateToken, createRecipe);
+router.put('/:id', authenticateToken, updateRecipe);
+router.delete('/:id', authenticateToken, deleteRecipe); 
 
 export default router;

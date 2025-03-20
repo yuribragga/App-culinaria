@@ -16,14 +16,12 @@ const Login: React.FC = ({ navigation }: any) => {
       const response = await api.post('auth/login', { email, password });
       const { token, user } = response.data;
 
-      // Armazena o token no AsyncStorage
       await AsyncStorage.setItem('userToken', token);
       console.log('Token JWT armazenado:', token);
 
-      // Salva os dados do usuário no contexto
       login(user);
 
-      // Navega para a aba "Recipes"
+
       navigation.navigate('Main', { screen: 'Recipes' });
     } catch (error: any) {
       console.error('Erro ao fazer login:', error.response?.data || error.message);

@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-// Estender a interface Request diretamente no arquivo
 declare module 'express' {
   export interface Request {
     user?: {
@@ -11,7 +10,7 @@ declare module 'express' {
   }
 }
 
-const SECRET_KEY = process.env.JWT_SECRET || 'seu_segredo_super_secreto';
+const SECRET_KEY = process.env.JWT_SECRET || '';
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
@@ -25,8 +24,8 @@ export const authenticateToken = (req: Request, res: Response, next: NextFunctio
 
   try {
     const decoded = jwt.verify(token, SECRET_KEY) as { id: number; email: string };
-    req.user = decoded; // Adiciona os dados do token ao objeto `req`
-    next(); // Chama o próximo middleware ou controlador
+    req.user = decoded; 
+    next();
   } catch (error) {
     res.status(403).json({ message: 'Token inválido ou expirado' });
     return;

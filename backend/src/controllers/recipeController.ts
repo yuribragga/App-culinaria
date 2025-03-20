@@ -3,12 +3,11 @@ import { AppDataSource } from '../data-source';
 import { Recipe } from '../entities/Recipe';
 import { User } from '../entities/User';
 
-// Criar uma nova receita
 export const createRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description, ingredients, instructions, time, servings, image } = req.body;
 
-    // Validação dos campos obrigatórios
+   
     if (!name || !description || !ingredients || !instructions || !time || !servings) {
       res.status(400).json({ message: 'Todos os campos são obrigatórios' });
       return;
@@ -31,7 +30,6 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
 
     const recipeRepository = AppDataSource.getRepository(Recipe);
 
-    // Criação de uma nova receita
     const newRecipe = recipeRepository.create({
       name,
       description,
@@ -40,10 +38,9 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
       time,
       servings,
       image,
-      user, // Associa a receita ao usuário autenticado
+      user,
     });
 
-    // Salvando a nova receita no banco de dados
     await recipeRepository.save(newRecipe);
 
     res.status(201).json({ message: 'Receita criada com sucesso', recipe: newRecipe });
@@ -53,7 +50,7 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Listar todas as receitas
+
 export const listRecipes = async (req: Request, res: Response): Promise<void> => {
   try {
     const recipeRepository = AppDataSource.getRepository(Recipe);
@@ -65,7 +62,6 @@ export const listRecipes = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-// Buscar receitas por nome ou descrição
 export const searchRecipes = async (req: Request, res: Response): Promise<void> => {
   try {
     const { query } = req.query;
@@ -90,7 +86,7 @@ export const searchRecipes = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// Obter receita por ID
+
 export const getRecipeById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -98,7 +94,7 @@ export const getRecipeById = async (req: Request, res: Response): Promise<void> 
     const recipeRepository = AppDataSource.getRepository(Recipe);
     const recipe = await recipeRepository.findOne({
       where: { id: parseInt(id, 10) },
-      relations: ['ingredients'], // Inclua relações, se necessário
+      relations: ['ingredients'],
     });
 
     if (!recipe) {
@@ -111,7 +107,7 @@ export const getRecipeById = async (req: Request, res: Response): Promise<void> 
         id: recipe.id,
         name: recipe.name,
         description: recipe.description,
-        ingredients: recipe.ingredients || [], // Certifique-se de que é um array
+        ingredients: recipe.ingredients || [],
         instructions: recipe.instructions,
         time: recipe.time,
         servings: recipe.servings,
@@ -124,7 +120,7 @@ export const getRecipeById = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// Atualizar receita
+
 export const updateRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
@@ -155,7 +151,7 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
   }
 };
 
-// Excluir receita
+
 export const deleteRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
