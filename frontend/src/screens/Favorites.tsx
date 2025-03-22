@@ -1,29 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import api from '../services/api';
-
-interface Recipe {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-}
+import { AuthContext } from '../services/AuthContext';
 
 const Favorites: React.FC<{ navigation: any }> = ({ navigation }) => {
-  const [favorites, setFavorites] = useState<Recipe[]>([]);
-
-  const fetchFavorites = async () => {
-    try {
-      const response = await api.get('/favorites');
-      setFavorites(response.data.favorites);
-    } catch (error: any) {
-      console.error('Erro ao buscar favoritos:', error.response?.data || error.message);
-    }
-  };
+  const { isLoggedIn, favorites, fetchFavorites } = useContext(AuthContext);
 
   useEffect(() => {
-    fetchFavorites();
-  }, []);
+    if (isLoggedIn) {
+      fetchFavorites(); // Busca os favoritos apenas se o usuário estiver logado
+    }
+  }, [isLoggedIn]);
+
+  if (!isLoggedIn) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.emptyText}>Você precisa estar logado para ver seus favoritos.</Text>
+      </View>
+    );
+  }
 
   if (favorites.length === 0) {
     return (
@@ -41,12 +35,18 @@ const Favorites: React.FC<{ navigation: any }> = ({ navigation }) => {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.recipeCard}
-            onPress={() => navigation.navigate('RecipeDetails', { id: item.id })}
+            onPress={() => navigation.navigate('Recipes', {
+              screen: 'RecipeDetails',
+              params: { id: item.id },
+            })
+          }
           >
             <Image source={{ uri: item.image }} style={styles.recipeImage} />
             <View style={styles.recipeInfo}>
               <Text style={styles.recipeName}>{item.name}</Text>
-              <Text style={styles.recipeDescription}>{item.description}</Text>
+              <Text style={styles.recipeDescription} numberOfLines={2}>
+                {item.description}
+              </Text>
             </View>
           </TouchableOpacity>
         )}
@@ -62,18 +62,18 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   emptyText: {
-    fontSize: 18,
-    color: '#666',
     textAlign: 'center',
+    fontSize: 18,
+    color: '#888',
     marginTop: 20,
   },
   recipeCard: {
     flexDirection: 'row',
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    backgroundColor: '#f9f9f9',
     borderRadius: 8,
     overflow: 'hidden',
+    elevation: 2,
   },
   recipeImage: {
     width: 100,
@@ -84,12 +84,13 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   recipeName: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   recipeDescription: {
     fontSize: 14,
     color: '#666',
+    marginVertical: 4,
   },
 });
 

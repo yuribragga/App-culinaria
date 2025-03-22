@@ -54,48 +54,41 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const login = async (req: Request, res: Response): Promise<void> => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    res.status(400).json({ message: 'Email e senha são obrigatórios' });
+    return;
+  }
+
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      res.status(400).json({ message: 'Email e senha são obrigatórios' });
-      return;
-    }
-
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({ where: { email } });
 
     if (!user) {
-      res.status(401).json({ message: 'Usuário não encontrado' });
+      res.status(400).json({ message: 'Credenciais inválidas' });
       return;
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
+
     if (!isPasswordValid) {
-      res.status(401).json({ message: 'Senha inválida' });
+      res.status(400).json({ message: 'Credenciais inválidas' });
       return;
     }
 
-    const token = jwt.sign({ id: user.id, email: user.email }, SECRET_KEY, { expiresIn: '1h' });
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET as string, // Use a chave secreta do .env
+      { expiresIn: '1h' }
+    );
 
-    res.status(200).json({
-      message: 'Login realizado com sucesso',
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        nationality: user.nationality,
-        phoneNumber: user.phoneNumber,
-        name: user.name,
-        socialName: user.socialName,
-      },
-    });
+    res.status(200).json({ token, user });
   } catch (error) {
     console.error('Erro ao fazer login:', error);
     res.status(500).json({ message: 'Erro no servidor' });
   }
 };
-
 
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {

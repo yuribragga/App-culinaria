@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 declare module 'express' {
   export interface Request {
@@ -10,24 +10,34 @@ declare module 'express' {
   }
 }
 
-const SECRET_KEY = process.env.JWT_SECRET || '';
-
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
 
-  if (!authHeader) {
+  console.log('Token recebido no backend:', token); // Log para verificar o token
+
+  if (!token) {
     res.status(401).json({ message: 'Token não fornecido' });
-    return;
+    return; // Certifique-se de retornar para evitar que o código continue
   }
 
-  const token = authHeader.split(' ')[1];
+  jwt.verify(token, process.env.JWT_SECRET as string, (err, decoded) => {
+    if (err) {
+      console.error('Erro ao verificar o token:', err); // Log para verificar erros de validação
+      res.status(403).json({ message: 'Token inválido' });
+      return; // Certifique-se de retornar para evitar que o código continue
+    }
 
-  try {
-    const decoded = jwt.verify(token, SECRET_KEY) as { id: number; email: string };
-    req.user = decoded; 
-    next();
-  } catch (error) {
-    res.status(403).json({ message: 'Token inválido ou expirado' });
-    return;
-  }
+    // Verifica se o payload contém as propriedades esperadas
+    if (typeof decoded === 'object' && 'id' in decoded && 'email' in decoded) {
+      req.user = {
+        id: decoded.id as number,
+        email: decoded.email as string,
+      };
+      console.log('Usuário autenticado:', req.user); // Log para verificar o usuário autenticado
+      next(); // Chama o próximo middleware ou manipulador de rota
+    } else {
+      res.status(403).json({ message: 'Token inválido' });
+    }
+  });
 };

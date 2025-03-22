@@ -12,16 +12,20 @@ const Login: React.FC = ({ navigation }: any) => {
   const { login } = useContext(AuthContext);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      setErrorMessage('Por favor, preencha todos os campos.');
+      return;
+    }
+
     try {
+      console.log('Dados enviados para o backend:', { email, password }); // Log para depuração
       const response = await api.post('auth/login', { email, password });
       const { token, user } = response.data;
 
       await AsyncStorage.setItem('userToken', token);
       console.log('Token JWT armazenado:', token);
 
-      login(user);
-
-
+      login(email, password); // Atualiza o contexto de autenticação
       navigation.navigate('Main', { screen: 'Recipes' });
     } catch (error: any) {
       console.error('Erro ao fazer login:', error.response?.data || error.message);
@@ -42,6 +46,7 @@ const Login: React.FC = ({ navigation }: any) => {
         style={styles.input}
         left={<TextInput.Icon icon="email" />}
         keyboardType="email-address"
+        autoCapitalize="none" // Garante que o email não seja capitalizado
       />
       <TextInput
         label="Senha"
@@ -104,7 +109,7 @@ const styles = StyleSheet.create({
   button: {
     marginTop: 20,
     borderRadius: 8,
-    backgroundColor: '#9BC584', 
+    backgroundColor: '#9BC584',
   },
   buttonContent: {
     height: 50,
@@ -117,7 +122,7 @@ const styles = StyleSheet.create({
     marginTop: -8,
     marginBottom: 12,
     textAlign: 'center',
-    color: '#ff7c74', 
+    color: '#ff7c74',
   },
 });
 

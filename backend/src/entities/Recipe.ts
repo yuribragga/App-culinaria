@@ -12,7 +12,7 @@ export class Recipe {
   @Column()
   description!: string;
 
-  @Column()
+  @Column('simple-array')
   ingredients!: string;
 
   @Column()
@@ -24,8 +24,8 @@ export class Recipe {
   @Column()
   servings!: number;
 
-  @Column({ nullable: true })
-  image!: string;
+  @Column({ type: 'blob', nullable: true })
+  image!: Buffer | null;
 
   @ManyToOne(() => User, (user) => user.recipes, { nullable: false })
   user!: User;

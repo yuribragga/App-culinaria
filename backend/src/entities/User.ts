@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinTable, ManyToMany } from 'typeorm';
 import { Recipe } from './Recipe';
 
 @Entity()
@@ -26,4 +26,11 @@ export class User {
 
   @OneToMany(() => Recipe, (recipe) => recipe.user)
   recipes!: Recipe[];
+
+  @Column({ type: 'blob', nullable:true})
+  profileImage!: Buffer | null;
+
+  @ManyToMany(() => Recipe)
+  @JoinTable()
+  favorites!: Recipe[];
 }

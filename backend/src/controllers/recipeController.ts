@@ -90,32 +90,19 @@ export const searchRecipes = async (req: Request, res: Response): Promise<void> 
 export const getRecipeById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-
     const recipeRepository = AppDataSource.getRepository(Recipe);
-    const recipe = await recipeRepository.findOne({
-      where: { id: parseInt(id, 10) },
-      relations: ['ingredients'],
-    });
+
+    // Busca a receita pelo ID
+    const recipe = await recipeRepository.findOne({ where: { id: parseInt(id, 10) } });
 
     if (!recipe) {
       res.status(404).json({ message: 'Receita não encontrada' });
       return;
     }
 
-    res.status(200).json({
-      recipe: {
-        id: recipe.id,
-        name: recipe.name,
-        description: recipe.description,
-        ingredients: recipe.ingredients || [],
-        instructions: recipe.instructions,
-        time: recipe.time,
-        servings: recipe.servings,
-        image: recipe.image,
-      },
-    });
+    res.status(200).json({ recipe });
   } catch (error) {
-    console.error('Erro ao buscar receita por ID:', error);
+    console.error('Erro ao buscar receita:', error);
     res.status(500).json({ message: 'Erro no servidor' });
   }
 };

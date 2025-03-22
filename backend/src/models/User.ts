@@ -1,5 +1,8 @@
-export interface User {
-    id: string;
-    email: string;
-    password: string;
-  }
+export class User {
+  id: string = '';
+  name: string =  '';
+  email: string = '';
+  phoneNumber: string = '';
+
+  profileImage?: Buffer;
+}

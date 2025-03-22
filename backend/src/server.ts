@@ -3,6 +3,11 @@ import cors from 'cors';
 import { AppDataSource } from './data-source';
 import authRoutes from './routes/authRoutes';
 import recipeRoutes from './routes/recipeRoutes';
+import favoriteRoutes from './routes/favoriteRoutes';
+import dotenv from 'dotenv';
+import { recipeImageMiddleware } from './middlewares/uploadMiddleware';
+
+dotenv.config();
 
 const app = express();
 
@@ -11,7 +16,9 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 
-app.use('/recipes', recipeRoutes);
+app.use('/recipes',recipeImageMiddleware, recipeRoutes);
+
+app.use('/favorites', favoriteRoutes);
 
 AppDataSource.initialize()
   .then(() => {
