@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Switch } from 'react-native';
+import { Title } from 'react-native-paper';
 
 const Settings: React.FC = () => {
   const [isEnabled, setIsEnabled] = React.useState(false);
@@ -8,7 +9,7 @@ const Settings: React.FC = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Configurações</Text>
+       <Title style={styles.title}>Configurações</Title>
       <View style={styles.settingItem}>
         <Text style={styles.settingText}>Modo Escuro</Text>
         <Switch
@@ -28,10 +29,14 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
+  
   title: {
-    fontSize: 24,
+    fontSize: 28,
+    textAlign: 'center',
+    marginTop: 25,
+    marginBottom: 8,
     fontWeight: 'bold',
-    marginBottom: 16,
+    color: '#333',
   },
   settingItem: {
     flexDirection: 'row',

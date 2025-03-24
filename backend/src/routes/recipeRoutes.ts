@@ -7,7 +7,7 @@ const router = Router();
 router.get('/', listRecipes); 
 router.get('/:id', getRecipeById); 
 
-router.post('/', authenticateToken, createRecipe);
+router.post('/create', authenticateToken, createRecipe);
 router.put('/:id', authenticateToken, updateRecipe);
 router.delete('/:id', authenticateToken, deleteRecipe); 
 

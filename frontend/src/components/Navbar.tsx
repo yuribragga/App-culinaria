@@ -107,9 +107,9 @@ const Navbar: React.FC = () => {
       })}
     >
       <Tab.Screen name="Recipes" component={RecipeStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Favorites" component={Favorites} />
+      <Tab.Screen name="Favorites" component={Favorites} options={{headerShown: false}}/>
       <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Settings" component={Settings} />
+      <Tab.Screen name="Settings" component={Settings} options={{headerShown: false}}/>
     </Tab.Navigator>
   );
 };

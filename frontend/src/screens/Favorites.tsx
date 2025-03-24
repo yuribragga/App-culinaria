@@ -1,6 +1,7 @@
 import React, { useContext, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { AuthContext } from '../services/AuthContext';
+import { Title } from 'react-native-paper';
 
 const Favorites: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { isLoggedIn, favorites, fetchFavorites } = useContext(AuthContext);
@@ -29,6 +30,7 @@ const Favorites: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Title style={styles.title}>Favoritos</Title>
       <FlatList
         data={favorites}
         keyExtractor={(item) => item.id.toString()}
@@ -60,6 +62,14 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 28,
+    textAlign: 'center',
+    marginTop: 25,
+    marginBottom: 8,
+    fontWeight: 'bold',
+    color: '#333',
   },
   emptyText: {
     textAlign: 'center',

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Title } from 'react-native-paper';
 import api from '../services/api';
 
 interface Recipe {
@@ -38,8 +39,8 @@ const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
   }
 
   return (
-    
     <View style={styles.container}>
+      <Title style={styles.title}>Receitas</Title>
       <FlatList
         data={recipes}
         keyExtractor={(item) => item.id.toString()}
@@ -49,7 +50,7 @@ const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
             onPress={() => navigation.navigate('RecipeDetails', { id: item.id })} 
             >
               <Text>{item.name}</Text>
-            <Image source={{ uri: item.image }} style={styles.recipeImage} />
+            <Image source={{ uri: item.image }} style={styles.recipeImage}/>
             <View style={styles.recipeInfo}>
               <Text style={styles.recipeName}>{item.name}</Text>
               <Text style={styles.recipeDescription}>{item.description}</Text>
@@ -66,6 +67,14 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 28,
+    textAlign: 'center',
+    marginTop: 25,
+    marginBottom: 8,
+    fontWeight: 'bold',
+    color: '#333',
   },
   loadingContainer: {
     flex: 1,
