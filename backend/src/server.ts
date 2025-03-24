@@ -16,7 +16,7 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 
-app.use('/recipes',recipeImageMiddleware, recipeRoutes);
+app.use('/recipes', recipeImageMiddleware, recipeRoutes);
 
 app.use('/favorites', favoriteRoutes);
 

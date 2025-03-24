@@ -18,14 +18,14 @@ const Login: React.FC = ({ navigation }: any) => {
     }
 
     try {
-      console.log('Dados enviados para o backend:', { email, password }); // Log para depuração
+      console.log('Dados enviados para o backend:', { email, password }); 
       const response = await api.post('auth/login', { email, password });
       const { token, user } = response.data;
 
       await AsyncStorage.setItem('userToken', token);
       console.log('Token JWT armazenado:', token);
 
-      login(email, password); // Atualiza o contexto de autenticação
+      login(email, password); 
       navigation.navigate('Main', { screen: 'Recipes' });
     } catch (error: any) {
       console.error('Erro ao fazer login:', error.response?.data || error.message);
@@ -46,7 +46,7 @@ const Login: React.FC = ({ navigation }: any) => {
         style={styles.input}
         left={<TextInput.Icon icon="email" />}
         keyboardType="email-address"
-        autoCapitalize="none" // Garante que o email não seja capitalizado
+        autoCapitalize="none" 
       />
       <TextInput
         label="Senha"

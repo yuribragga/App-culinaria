@@ -1,51 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { View, TextInput, Button, Text } from 'react-native';
-import axios from 'axios';
+import { View, Alert } from 'react-native';
+import api from '../services/api';
+import RecipeForm from '../components/RecipeForm';
 
-const RecipeEdit: React.FC<{ route: any, navigation: any }> = ({ route, navigation }) => {
+const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, route }) => {
   const { id } = route.params;
   const [recipe, setRecipe] = useState<any>(null);
 
   useEffect(() => {
-    axios.get(`http://localhost:3000/api/recipes/${id}`)
-      .then(response => setRecipe(response.data.recipe))
-      .catch(error => console.error('Erro ao buscar receita:', error));
+    api.get(`/recipes/${id}`)
+      .then(response => setRecipe(response.data))
+      .catch(error => console.error('Erro ao carregar receita:', error));
   }, [id]);
 
-  const handleUpdate = () => {
-    axios.put(`http://10.0.2.2:3000/api/recipes/${id}`, recipe)
-      .then(() => {
-        alert('Receita atualizada com sucesso');
-        navigation.navigate('Home');
-      })
-      .catch(error => {
-        console.error('Erro ao atualizar receita:', error);
-        alert('Erro ao atualizar receita');
-      });
+  const handleUpdate = async (recipeData: any) => {
+    try {
+      await api.put(`/recipes/${id}`, recipeData);
+      Alert.alert('Receita atualizada com sucesso');
+      navigation.goBack();
+    } catch (error: any) {
+      console.error('Erro ao atualizar receita:', error.response?.data || error.message);
+      Alert.alert('Erro ao atualizar receita');
+    }
   };
 
-  if (!recipe) {
-    return <Text>Carregando...</Text>;
-  }
+  if (!recipe) return null;
 
   return (
     <View>
-      <Text>Nome</Text>
-      <TextInput value={recipe.name} onChangeText={(text) => setRecipe({ ...recipe, name: text })} />
-      <Text>Descrição</Text>
-      <TextInput value={recipe.description} onChangeText={(text) => setRecipe({ ...recipe, description: text })} />
-      <Text>Ingredientes</Text>
-      <TextInput value={recipe.ingredients.join(', ')} onChangeText={(text) => setRecipe({ ...recipe, ingredients: text.split(',') })} />
-      <Text>Instruções</Text>
-      <TextInput value={recipe.instructions} onChangeText={(text) => setRecipe({ ...recipe, instructions: text })} />
-      <Text>Tempo (em minutos)</Text>
-      <TextInput value={recipe.time.toString()} onChangeText={(text) => setRecipe({ ...recipe, time: parseInt(text) })} keyboardType="numeric" />
-      <Text>Porções</Text>
-      <TextInput value={recipe.servings.toString()} onChangeText={(text) => setRecipe({ ...recipe, servings: parseInt(text) })} keyboardType="numeric" />
-      <Text>Imagem (URL)</Text>
-      <TextInput value={recipe.image} onChangeText={(text) => setRecipe({ ...recipe, image: text })} />
-
-      <Button title="Atualizar Receita" onPress={handleUpdate} />
+      <RecipeForm initialValues={recipe} onSubmit={handleUpdate} submitButtonLabel="Atualizar Receita" />
     </View>
   );
 };

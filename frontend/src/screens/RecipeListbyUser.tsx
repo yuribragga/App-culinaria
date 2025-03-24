@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Title } from 'react-native-paper';
 import api from '../services/api';
 import CircularMenu from '../components/CircularMenu';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 
 interface Recipe {
@@ -12,13 +13,36 @@ interface Recipe {
   image: string;
 }
 
-const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
+const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const fetchRecipes = async () => {
+  const getToken = async () => {
     try {
-      const response = await api.get('/recipes');
+      const token = await AsyncStorage.getItem('token');
+      return token;
+    } catch (error) {
+      console.error('Erro ao recuperar o token:', error);
+      return null;
+    }
+  };
+
+
+  const fetchRecipes = async () => {
+    const token = await getToken();  
+
+    if (!token) {
+      console.log('Usuário não autenticado');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await api.get('/recipes/user', {
+        headers: {
+          Authorization: `Bearer ${token}`, 
+        },
+      });
       setRecipes(response.data.recipes);
     } catch (error: any) {
       console.error('Erro ao buscar receitas:', error.response?.data || error.message);
@@ -112,4 +136,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RecipeList;
+export default RecipeListbyUser;

@@ -159,3 +159,41 @@ export const deleteRecipe = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ message: 'Erro no servidor' });
   }
 };
+
+
+export const listRecipesByUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+
+    // Verifica se o userId está válido
+    if (!userId || isNaN(userId)) {
+      console.log('Erro: userId inválido', userId);
+      res.status(401).json({ message: 'Usuário não autenticado ou userId inválido' });
+      return;
+    }
+
+    const recipeRepository = AppDataSource.getRepository(Recipe);
+
+    // Busca as receitas associadas ao usuário autenticado
+    const recipes = await recipeRepository.find({
+      where: {
+        user: { id: userId },  // Referencia corretamente o relacionamento 'user'
+      },
+      relations: ['user'],  // Carrega a relação 'user' para que você possa acessar os dados de 'user'
+    });
+
+    if (recipes.length === 0) {
+      res.status(404).json({ message: 'Nenhuma receita encontrada para este usuário' });
+      return;
+    }
+
+    // Responde com a lista de receitas
+    res.status(200).json({ recipes });
+  } catch (error) {
+    console.error('Erro ao listar receitas do usuário:', error);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+};
+
+
+
