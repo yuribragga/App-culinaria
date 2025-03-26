@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import RecipeList from '../screens/RecipeList';
 import RecipeDetails from '../screens/RecipeDetails';
 import Profile from '../screens/profile';
+import RecipeListbyUser from '../screens/RecipeListbyUser';
 import Login from '../screens/Login';
 import Register from '../screens/Register';
 import Favorites from '../screens/Favorites';
@@ -36,6 +37,22 @@ const RecipeStack = () => (
         },
       }}
     />
+    <Stack.Screen
+            name="RecipeListbyUser"
+            component={RecipeListbyUser}
+            options={{
+              headerShown: true,
+              title: 'Minhas Receitas',
+              headerStyle: {
+                backgroundColor: '#9BC584',
+              },
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          />
+    
   </Stack.Navigator>
 );
 

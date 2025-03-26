@@ -3,28 +3,14 @@ import { AppDataSource } from '../data-source';
 import { Recipe } from '../entities/Recipe';
 import { User } from '../entities/User';
 
+
 export const createRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description, ingredients, instructions, time, servings, image } = req.body;
+    const userId = req.user?.id; // Obtém o ID do usuário autenticado do middleware `authenticateToken`
 
-   
-    if (!name || !description || !ingredients || !instructions || !time || !servings) {
-      res.status(400).json({ message: 'Todos os campos são obrigatórios' });
-      return;
-    }
-
-    // Obter o usuário autenticado (a partir do token JWT)
-    const userId = req.user?.id; // `req.user` é preenchido pelo `authMiddleware`
     if (!userId) {
       res.status(401).json({ message: 'Usuário não autenticado' });
-      return;
-    }
-
-    const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOne({ where: { id: userId } });
-
-    if (!user) {
-      res.status(404).json({ message: 'Usuário não encontrado' });
       return;
     }
 
@@ -38,7 +24,7 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
       time,
       servings,
       image,
-      user,
+      user: { id: userId },
     });
 
     await recipeRepository.save(newRecipe);
@@ -49,7 +35,6 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ message: 'Erro no servidor' });
   }
 };
-
 
 export const listRecipes = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -92,8 +77,10 @@ export const getRecipeById = async (req: Request, res: Response): Promise<void> 
     const { id } = req.params;
     const recipeRepository = AppDataSource.getRepository(Recipe);
 
-    // Busca a receita pelo ID
-    const recipe = await recipeRepository.findOne({ where: { id: parseInt(id, 10) } });
+    const recipe = await recipeRepository.findOne({
+      where: { id: Number(id) },
+      relations: ['user'], // Inclui os dados do autor da receita
+    });
 
     if (!recipe) {
       res.status(404).json({ message: 'Receita não encontrada' });
@@ -161,25 +148,27 @@ export const deleteRecipe = async (req: Request, res: Response): Promise<void> =
 };
 
 
-export const listRecipesByUser = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.id;
 
-    // Verifica se o userId está válido
-    if (!userId || isNaN(userId)) {
-      console.log('Erro: userId inválido', userId);
-      res.status(401).json({ message: 'Usuário não autenticado ou userId inválido' });
+
+export const getRecipesByUserId = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const userId = Number(id);
+
+    console.log('ID do usuário recebido:', req.params.id);
+    console.log('ID convertido para número:', Number(req.params.id));
+
+    // Valida e converte o ID para número
+    if (isNaN(userId)) {
+      res.status(400).json({ message: 'ID do usuário inválido' });
       return;
     }
 
     const recipeRepository = AppDataSource.getRepository(Recipe);
 
-    // Busca as receitas associadas ao usuário autenticado
     const recipes = await recipeRepository.find({
-      where: {
-        user: { id: userId },  // Referencia corretamente o relacionamento 'user'
-      },
-      relations: ['user'],  // Carrega a relação 'user' para que você possa acessar os dados de 'user'
+      where: { user: { id: userId } },
+      relations: ['user'], // Inclui os dados do autor da receita
     });
 
     if (recipes.length === 0) {
@@ -187,13 +176,11 @@ export const listRecipesByUser = async (req: Request, res: Response): Promise<vo
       return;
     }
 
-    // Responde com a lista de receitas
     res.status(200).json({ recipes });
   } catch (error) {
-    console.error('Erro ao listar receitas do usuário:', error);
+    console.error('Erro ao buscar receitas por ID do usuário:', error);
     res.status(500).json({ message: 'Erro no servidor' });
   }
 };
-
 
 

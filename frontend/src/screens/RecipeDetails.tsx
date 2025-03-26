@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { View, Text, StyleSheet, Image, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons'; // Importa o ícone
-import { AuthContext } from '../services/AuthContext';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import api from '../services/api';
+import { AuthContext } from '../services/AuthContext';
 
 interface Recipe {
   id: number;
@@ -13,35 +15,59 @@ interface Recipe {
   instructions: string;
   time: number;
   servings: number;
+  userId: number;
+  user?: {
+    id: number;
+    name: string;
+    email: string;
+    nationality: string;
+  };
 }
 
-const RecipeDetails: React.FC<{ route: any }> = ({ route }) => {
+const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navigation }) => {
   const { id } = route.params; // Obtém o ID da receita passado pela navegação
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [isFavorite, setIsFavorite] = useState<boolean>(false); // Estado para controlar se é favorito
+  const [loggedInUserId, setLoggedInUserId] = useState<number | null>(null);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false); // Estado para o favorito
   const { addFavorite, removeFavorite, favorites } = useContext(AuthContext); // Obtém as funções do contexto
 
-  useEffect(() => {
-    const fetchRecipeDetails = async () => {
-      try {
-        const response = await api.get(`/recipes/${id}`); // Faz a requisição para o backend
-        setRecipe(response.data.recipe); // Atualiza o estado com os detalhes da receita
+  const fetchRecipeDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/recipes/${id}`); // Faz a requisição para o backend
+      setRecipe(response.data.recipe); // Atualiza o estado com os detalhes da receita
 
-        // Verifica se a receita já está nos favoritos
-        const isFav = favorites.some((fav) => fav.id === id);
-        setIsFavorite(isFav);
-      } catch (error) {
-        console.error('Erro ao buscar detalhes da receita:', error);
-        setError('Erro ao carregar os detalhes da receita.');
-      } finally {
-        setLoading(false); // Finaliza o carregamento
+      // Verifica se a receita já está nos favoritos
+      const isFav = favorites.some((fav) => fav.id === id);
+      setIsFavorite(isFav);
+    } catch (error) {
+      console.error('Erro ao buscar detalhes da receita:', error);
+      setError('Erro ao carregar os detalhes da receita.');
+    } finally {
+      setLoading(false); // Finaliza o carregamento
+    }
+  };
+
+  const fetchLoggedInUserId = async () => {
+    try {
+      const token = await AsyncStorage.getItem('token');
+      if (token) {
+        const decodedToken: any = JSON.parse(atob(token.split('.')[1])); // Decodifica o token
+        setLoggedInUserId(decodedToken.id);
       }
-    };
+    } catch (error) {
+      console.error('Erro ao obter o ID do usuário logado:', error);
+    }
+  };
 
-    fetchRecipeDetails();
-  }, [id, favorites]);
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchLoggedInUserId();
+      fetchRecipeDetails();
+    }, [id, favorites])
+  );
 
   const handleToggleFavorite = async () => {
     try {
@@ -90,19 +116,34 @@ const RecipeDetails: React.FC<{ route: any }> = ({ route }) => {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
       <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+      {Number(loggedInUserId) === Number(recipe.user?.id) && (
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={() => navigation.navigate('RecipeEdit', { id: recipe.id })}
+        >
+          <Text style={styles.editButtonText}>Editar Receita</Text>
+        </TouchableOpacity>
+      )}
       <View style={styles.header}>
         <Text style={styles.recipeName}>{recipe.name}</Text>
         <TouchableOpacity onPress={handleToggleFavorite}>
           <Icon
-            name={isFavorite ? 'favorite' : 'favorite-border'} // Ícone muda com base no estado
+            name={isFavorite ? 'favorite' : 'favorite-border'}
             size={30}
-            color={isFavorite ? '#FF0000' : '#666'} // Vermelho se for favorito, cinza caso contrário
+            color={isFavorite ? 'red' : '#666'}
           />
         </TouchableOpacity>
       </View>
       <Text style={styles.recipeDescription}>{recipe.description}</Text>
+
+      {/* Exibe o autor da receita */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Autor da Receita</Text>
+        <Text style={styles.info}>Nome: {recipe.user?.name}</Text>
+        <Text style={styles.info}>Nacionalidade: {recipe.user?.nationality}</Text>
+      </View>
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Ingredientes</Text>
@@ -141,6 +182,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    padding: 16,
+    backgroundColor: '#fff',
+    paddingBottom: 32,
   },
   recipeImage: {
     width: '100%',
@@ -192,6 +239,20 @@ const styles = StyleSheet.create({
     color: 'red',
     textAlign: 'center',
   },
+  editButton: {
+    backgroundColor: '#9BC584',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+    marginBottom: 16,
+  },
+  editButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 });
 
 export default RecipeDetails;
+

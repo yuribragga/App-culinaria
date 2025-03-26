@@ -48,11 +48,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('Dados enviados para o backend:', { email, password }); // Log para verificar os dados
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
-
+  
       console.log('Token JWT armazenado:', token); // Log para verificar o token armazenado
       await AsyncStorage.setItem('token', token); // Armazena o token no AsyncStorage
       setIsLoggedIn(true);
       setUser(user); // Atualiza o estado do usuário
+  
+      // Adiciona o log para verificar o ID do usuário
+      console.log('ID do usuário após login:', user.id); // Log o ID do usuário após o login
+  
     } catch (error: any) {
       console.error('Erro ao fazer login:', error);
       if (error.response?.status === 400) {
@@ -62,7 +66,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
   };
-
+  
+  
   const logout = () => {
     setIsLoggedIn(false);
     setUser(null);

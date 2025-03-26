@@ -1,16 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { View, Alert } from 'react-native';
+import { View, Alert, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import api from '../services/api';
 import RecipeForm from '../components/RecipeForm';
 
 const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, route }) => {
   const { id } = route.params;
   const [recipe, setRecipe] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    api.get(`/recipes/${id}`)
-      .then(response => setRecipe(response.data))
-      .catch(error => console.error('Erro ao carregar receita:', error));
+    const fetchRecipe = async () => {
+      try {
+        const response = await api.get(`/recipes/${id}`);
+        setRecipe(response.data.recipe); // Certifique-se de que o campo correto está sendo usado
+      } catch (error: any) {
+        console.error('Erro ao carregar receita:', error.response?.data || error.message);
+        setError('Erro ao carregar a receita. Tente novamente mais tarde.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecipe();
   }, [id]);
 
   const handleUpdate = async (recipeData: any) => {
@@ -24,13 +36,60 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
     }
   };
 
-  if (!recipe) return null;
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#9BC584" />
+        <Text>Carregando receita...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (!recipe) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Receita não encontrada.</Text>
+      </View>
+    );
+  }
 
   return (
-    <View>
+    <View style={styles.container}>
       <RecipeForm initialValues={recipe} onSubmit={handleUpdate} submitButtonLabel="Atualizar Receita" />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#fff',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    color: 'red',
+    textAlign: 'center',
+  },
+});
 
 export default RecipeEdit;

@@ -1,8 +1,8 @@
 export class User {
-  id: string = '';
+  id: number = 0;
   name: string =  '';
   email: string = '';
   phoneNumber: string = '';
-  
+  password: string = '';
   profileImage?: Buffer;
 }

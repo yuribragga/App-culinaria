@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
+import { AuthContext } from '../services/AuthContext'; // Certifique-se de que o caminho está correto
 
 const CircularMenu: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const rotation = new Animated.Value(0);
+  const { isLoggedIn } = useContext(AuthContext); // Verifica se o usuário está logado
 
   const toggleMenu = () => {
     Animated.timing(rotation, {
@@ -19,6 +21,11 @@ const CircularMenu: React.FC<{ navigation: any }> = ({ navigation }) => {
     inputRange: [0, 1],
     outputRange: ['0deg', '45deg'],
   });
+
+  // Se o usuário não estiver logado, não renderiza o menu
+  if (!isLoggedIn) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>

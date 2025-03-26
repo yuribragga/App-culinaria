@@ -11,6 +11,7 @@ interface Recipe {
   name: string;
   description: string;
   image: string;
+  userId: number; // Adicione o userId do autor da receita
 }
 
 const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -27,8 +28,7 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
   };
 
-
-  const fetchRecipes = async () => {
+  const fetchRecipesByUser = async (userId: number) => {
     const token = await getToken();  
 
     if (!token) {
@@ -38,14 +38,16 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
 
     try {
-      const response = await api.get('/recipes/user', {
+      console.log('Token enviado:', token); // Log para depuração
+      const response = await api.get(`/recipes/user/${userId}`, {
         headers: {
-          Authorization: `Bearer ${token}`, 
+          Authorization: `Bearer ${token}`,
         },
       });
+      console.log('Receitas recebidas:', response.data);
       setRecipes(response.data.recipes);
     } catch (error: any) {
-      console.error('Erro ao buscar receitas:', error.response?.data || error.message);
+      console.error('Erro ao buscar receitas do usuário:', error.response?.data || error.message);
     } finally {
       setLoading(false);
     }
@@ -53,7 +55,8 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      fetchRecipes();
+      const userId = 1; // Replace with the actual user ID
+      fetchRecipesByUser(userId);
     }, [])
   );
 
@@ -68,7 +71,6 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Title style={styles.title}>Receitas</Title>
       <FlatList
         data={recipes}
         keyExtractor={(item) => item.id.toString()}

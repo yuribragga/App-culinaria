@@ -7,6 +7,7 @@ import { AuthProvider } from './frontend/src/services/AuthContext';
 import RecipeCreate from './frontend/src/screens/RecipeCreate';
 import RecipeEdit from './frontend/src/screens/RecipeEdit';
 import RecipeListbyUser from './frontend/src/screens/RecipeListbyUser';
+import RecipeDetails from './frontend/src/screens/RecipeDetails';
 
 const Stack = createStackNavigator();
 
@@ -19,7 +20,26 @@ const App = () => {
           <Stack.Screen name="Main" component={Navbar} />
           <Stack.Screen name="RecipeCreate" component={RecipeCreate} />
           <Stack.Screen name="RecipeEdit" component={RecipeEdit} />
-          <Stack.Screen name="RecipeListbyUser" component={RecipeListbyUser} />
+          <Stack.Screen
+  name="RecipeDetails"
+  component={RecipeDetails}
+  options={{ title: 'Detalhes da Receita' }} 
+/>
+          <Stack.Screen
+            name="RecipeListbyUser"
+            component={RecipeListbyUser}
+            options={{
+              headerShown: true,
+              title: 'Minhas Receitas',
+              headerStyle: {
+                backgroundColor: '#9BC584',
+              },
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </AuthProvider>
