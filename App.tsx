@@ -26,7 +26,17 @@ const App = () => {
           <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Welcome" component={Welcome} />
             <Stack.Screen name="Main" component={Navbar} />
-            <Stack.Screen name="RecipeCreate" component={RecipeCreate} />
+            <Stack.Screen name="RecipeCreate" component={RecipeCreate} options={{
+                headerShown: true,
+                title: 'Criar Receita',
+                headerStyle: {
+                  backgroundColor: '#9BC584',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+              }}/>
             <Stack.Screen name="RecipeEdit" component={RecipeEdit} />
             <Stack.Screen
               name="RecipeDetails"

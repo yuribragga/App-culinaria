@@ -1,10 +1,28 @@
-import React, { useContext } from 'react';
-import { View, StyleSheet, Image } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, StyleSheet, Image, Alert, Modal, TouchableOpacity } from 'react-native';
 import { Text, Title, Button } from 'react-native-paper';
 import { AuthContext } from '../services/AuthContext';
+import api from '../services/api';
 
 const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user, logout } = useContext(AuthContext);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    try {
+      if (user) {
+        await api.delete(`/auth/delete/${user.id}`);
+        Alert.alert('Conta deletada com sucesso!');
+        logout(); // Desloga o usuário
+        navigation.navigate('Login'); // Redireciona para a tela de login
+      } else {
+        throw new Error('Usuário não encontrado.');
+      }
+    } catch (error: any) {
+      console.error('Erro ao deletar conta:', error.response?.data || error.message);
+      Alert.alert('Erro', 'Não foi possível deletar a conta. Tente novamente mais tarde.');
+    }
+  };
 
   const handleEditProfile = () => {
     navigation.navigate('UserEdit'); // Navega para a página de edição de usuário
@@ -55,6 +73,45 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
           >
             Sair
           </Button>
+          <Button
+            mode="contained"
+            onPress={() => setModalVisible(true)}
+            style={styles.deleteButton}
+          >
+            Deletar Conta
+          </Button>
+
+          {/* Modal de Confirmação */}
+          <Modal
+            visible={modalVisible}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalText}>
+                  Tem certeza de que deseja deletar sua conta? Essa ação não pode ser desfeita.
+                </Text>
+                <View style={styles.modalButtons}>
+                  <Button
+                    mode="contained"
+                    onPress={handleDeleteAccount}
+                    style={styles.confirmButton}
+                  >
+                    Confirmar
+                  </Button>
+                  <Button
+                    mode="outlined"
+                    onPress={() => setModalVisible(false)}
+                    style={styles.cancelButton}
+                  >
+                    Cancelar
+                  </Button>
+                </View>
+              </View>
+            </View>
+          </Modal>
         </>
       ) : (
         <Text style={styles.info}>Nenhum usuário logado</Text>
@@ -66,27 +123,25 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
- 
     padding: 16,
     backgroundColor: '#f9f9f9',
   },
   title: {
-    fontSize: 24, 
+    fontSize: 24,
     textAlign: 'center',
     paddingVertical: 10,
     fontWeight: 'bold',
     color: '#FFF',
     backgroundColor: '#9BC584',
-    borderRadius: 8, 
-    overflow: 'hidden', 
+    borderRadius: 8,
+    overflow: 'hidden',
     marginBottom: 16,
-    marginTop:8, 
-    elevation: 4, 
-    shadowColor: '#000', 
+    marginTop: 8,
+    elevation: 4,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
-    
   },
   imageContainer: {
     alignItems: 'center',
@@ -119,7 +174,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   flag: {
-    lineHeight: 10,
+    lineHeight: 30,
     fontSize: 30,
     textAlign: 'center',
   },
@@ -131,6 +186,44 @@ const styles = StyleSheet.create({
   logoutButton: {
     marginTop: 10,
     borderRadius: 8,
+    borderColor: '#9BC584',
+  },
+  deleteButton: {
+    marginTop: 10,
+    borderRadius: 8,
+    backgroundColor: '#FF6B6B',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  confirmButton: {
+    flex: 1,
+    marginRight: 10,
+    backgroundColor: '#FF6B6B',
+  },
+  cancelButton: {
+    flex: 1,
+    marginLeft: 10,
     borderColor: '#9BC584',
   },
 });

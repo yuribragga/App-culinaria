@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { AppDataSource } from '../data-source';
 import { User } from '../entities/User';
 import jwt from 'jsonwebtoken';
+import { Recipe } from '../entities/Recipe';
 
 const SECRET_KEY = process.env.JWT_SECRET || 'seu_segredo_super_secreto';
 
@@ -135,6 +136,44 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     });
   } catch (error) {
     console.error('Erro ao atualizar usuário:', error);
+    res.status(500).json({ message: 'Erro no servidor' });
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+
+    const userRepository = AppDataSource.getRepository(User);
+
+    const user = await userRepository.findOne({ where: { id: Number(userId) }, relations: ['favorites', 'recipes'] });
+
+    if (!user) {
+      res.status(404).json({ message: 'Usuário não encontrado' });
+      return;
+    }
+
+
+    if (user.favorites && user.favorites.length > 0) {
+      await userRepository
+        .createQueryBuilder()
+        .relation(User, 'favorites')
+        .of(user)
+        .remove(user.favorites);
+    }
+
+    
+    if (user.recipes && user.recipes.length > 0) {
+      const recipeRepository = AppDataSource.getRepository(Recipe);
+      await recipeRepository.delete({ user: { id: Number(userId) } });
+    }
+
+
+    await userRepository.remove(user);
+
+    res.status(200).json({ message: 'Usuário deletado com sucesso' });
+  } catch (error) {
+    console.error('Erro ao deletar usuário:', error);
     res.status(500).json({ message: 'Erro no servidor' });
   }
 };

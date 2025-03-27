@@ -19,12 +19,12 @@ export class User {
   password!: string;
 
   @Column()
-  nationality!: string; 
+  nationality!: string;
 
   @Column()
-  phoneNumber!: string; 
+  phoneNumber!: string;
 
-  @OneToMany(() => Recipe, (recipe) => recipe.user)
+  @OneToMany(() => Recipe, (recipe) => recipe.user, { cascade: true, onDelete: 'CASCADE' })
   recipes!: Recipe[];
 
   @Column({ type: 'text', nullable: true })

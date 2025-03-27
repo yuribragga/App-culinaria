@@ -15,9 +15,10 @@ interface RecipeFormProps {
   };
   onSubmit: (data: any) => void;
   submitButtonLabel: string;
+  navigation: any;
 }
 
-const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submitButtonLabel }) => {
+const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submitButtonLabel, navigation }) => {
   const [name, setName] = useState(initialValues?.name || '');
   const [description, setDescription] = useState(initialValues?.description || '');
   const [ingredients, setIngredients] = useState(
@@ -28,8 +29,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
       : initialValues?.ingredients || ''
   );
   const [instructions, setInstructions] = useState(initialValues?.instructions || '');
-  const [time, setTime] = useState(String(initialValues?.time || '')); // Garantir que seja string
-  const [servings, setServings] = useState(String(initialValues?.servings || '')); // Garantir que seja string
+  const [time, setTime] = useState(String(initialValues?.time || '')); 
+  const [servings, setServings] = useState(String(initialValues?.servings || '')); 
   const [image, setImage] = useState<string | null>(initialValues?.image || '');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -79,7 +80,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
     const recipeData = {
       name,
       description,
-      ingredients: ingredients.split(','), // Converte a string de ingredientes em um array
+      ingredients: ingredients.split(','),
       instructions,
       time: Number(time),
       servings: Number(servings),
@@ -87,8 +88,9 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
     };
 
     try {
-      onSubmit(recipeData);
+     await onSubmit(recipeData);
       Alert.alert('Sucesso', 'Receita salva com sucesso!');
+      navigation.navigate('Main', { screen: 'Recipes' });
     } catch (error: any) {
       console.error('Erro ao salvar receita:', error.message);
       setErrorMessage('Erro ao salvar receita. Tente novamente.');
@@ -97,7 +99,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Title style={styles.title}>Cadastro de Receita</Title>
 
       <TextInput
         label="Nome da Receita"

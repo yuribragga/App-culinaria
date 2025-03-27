@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Title } from 'react-native-paper';
 import api from '../services/api';
 import CircularMenu from '../components/CircularMenu';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -11,7 +10,7 @@ interface Recipe {
   name: string;
   description: string;
   image: string;
-  userId: number; // Adicione o userId do autor da receita
+  userId: number;
 }
 
 const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
@@ -28,8 +27,18 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
   };
 
+  const decodeToken = (token: string) => {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1])); // Decodifica o payload do token JWT
+      return payload.id; // Retorna o ID do usuário
+    } catch (error) {
+      console.error('Erro ao decodificar o token:', error);
+      return null;
+    }
+  };
+
   const fetchRecipesByUser = async (userId: number) => {
-    const token = await getToken();  
+    const token = await getToken();
 
     if (!token) {
       console.log('Usuário não autenticado');
@@ -38,7 +47,7 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
 
     try {
-      console.log('Token enviado:', token); 
+      console.log('Token enviado:', token);
       const response = await api.get(`/recipes/user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -55,8 +64,25 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      const userId = 1; 
-      fetchRecipesByUser(userId);
+      const fetchUserIdAndRecipes = async () => {
+        const token = await getToken();
+        if (!token) {
+          console.log('Usuário não autenticado');
+          setLoading(false);
+          return;
+        }
+
+        const userId = decodeToken(token); // Decodifica o token para obter o ID do usuário
+        if (!userId) {
+          console.error('ID do usuário não encontrado no token');
+          setLoading(false);
+          return;
+        }
+
+        fetchRecipesByUser(userId); // Busca as receitas do usuário com o ID correto
+      };
+
+      fetchUserIdAndRecipes();
     }, [])
   );
 
@@ -98,14 +124,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 28,
-    textAlign: 'center',
-    marginTop: 25,
-    marginBottom: 8,
-    fontWeight: 'bold',
-    color: '#333',
   },
   loadingContainer: {
     flex: 1,

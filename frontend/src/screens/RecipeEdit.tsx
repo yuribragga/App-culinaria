@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Alert, ActivityIndicator, Text, StyleSheet } from 'react-native';
+import { View, Alert, ActivityIndicator, Text, StyleSheet, Button } from 'react-native';
 import api from '../services/api';
 import RecipeForm from '../components/RecipeForm';
 
@@ -36,6 +36,30 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
     }
   };
 
+  const handleDelete = async () => {
+    Alert.alert(
+      'Confirmar Exclusão',
+      'Tem certeza de que deseja deletar esta receita?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Deletar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete(`/recipes/${id}`);
+              Alert.alert('Receita deletada com sucesso');
+              navigation.navigate('Main');
+            } catch (error: any) {
+              console.error('Erro ao deletar receita:', error.response?.data || error.message);
+              Alert.alert('Erro ao deletar receita');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -63,7 +87,8 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
 
   return (
     <View style={styles.container}>
-      <RecipeForm initialValues={recipe} onSubmit={handleUpdate} submitButtonLabel="Atualizar Receita" />
+      <RecipeForm initialValues={recipe} onSubmit={handleUpdate} submitButtonLabel="Atualizar Receita" navigation={navigation} />
+      <Button title="Deletar Receita" onPress={handleDelete} color="#FF6B6B" />
     </View>
   );
 };

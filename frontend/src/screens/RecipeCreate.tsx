@@ -17,7 +17,7 @@ const RecipeCreate: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <View>
-      <RecipeForm onSubmit={handleCreate} submitButtonLabel="Criar Receita" />
+      <RecipeForm onSubmit={handleCreate} submitButtonLabel="Criar Receita" navigation={navigation} />
     </View>
   );
 };

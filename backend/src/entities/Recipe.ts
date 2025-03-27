@@ -27,7 +27,7 @@ export class Recipe {
   @Column({ type: 'blob', nullable: true })
   image!: Buffer | null;
 
-  @ManyToOne(() => User, (user) => user.recipes, { nullable: false })
+  @ManyToOne(() => User, (user) => user.recipes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user!: User;
 }
