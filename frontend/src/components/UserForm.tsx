@@ -59,7 +59,7 @@ const UserForm: React.FC<UserFormProps> = ({ initialValues = {}, onSubmit, submi
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 1,
@@ -85,7 +85,6 @@ const UserForm: React.FC<UserFormProps> = ({ initialValues = {}, onSubmit, submi
     });
 
     if (!result.canceled) {
-      console.log('Foto tirada:', result.assets[0].uri);
       setProfileImage(result.assets[0].uri);
     }
   };

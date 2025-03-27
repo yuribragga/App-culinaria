@@ -7,7 +7,7 @@ const RegisterPage: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleRegister = async (userData: any) => {
     try {
       await api.post('/auth/register', userData);
-      Alert.alert('Sucesso', 'Usuário registrado com sucesso!');
+      Alert.alert('', 'Usuário registrado com sucesso!');
       navigation.navigate('Login');
     } catch (error: any) {
       console.error('Erro ao registrar usuário:', error.response?.data || error.message);

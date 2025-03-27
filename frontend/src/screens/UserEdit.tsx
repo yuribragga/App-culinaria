@@ -1,9 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
+import { View, StyleSheet, Alert, ActivityIndicator, Text } from 'react-native';
 import UserForm from '../components/UserForm';
 import { AuthContext } from '../services/AuthContext';
 import api from '../services/api';
-import Toast from 'react-native-toast-message';
 
 const UserEdit: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user, setUser } = useContext(AuthContext);
@@ -20,7 +19,7 @@ const UserEdit: React.FC<{ navigation: any }> = ({ navigation }) => {
         phoneNumber: user.phoneNumber,
         nationality: user.nationality,
         profileImage: user.profileImage,
-        password: '',
+        password: '', 
       });
       setLoading(false);
     } else {
@@ -32,36 +31,17 @@ const UserEdit: React.FC<{ navigation: any }> = ({ navigation }) => {
   const handleSubmit = async (data: any) => {
     try {
       if (!user) {
-        Toast.show({
-          type: 'error',
-          text1: 'Erro',
-          text2: 'Usuário não encontrado.',
-        });
+        Alert.alert('Erro', 'Usuário não encontrado.');
         return;
       }
 
-      console.log('Dados enviados:', data);
-      console.log('URL:', `/auth/edit/${user.id}`);
-
       const response = await api.put(`/auth/edit/${user.id}`, data);
-      setUser(response.data.user);
-
-      Toast.show({
-        type: 'success',
-        text1: 'Sucesso',
-        text2: 'Perfil atualizado com sucesso!',
-      });
-
-      setTimeout(() => {
-        navigation.goBack();
-      }, 2000); // Navega de volta após 2 segundos
+      setUser(response.data.user); 
+      Alert.alert('', 'Perfil atualizado com sucesso!');
+      navigation.goBack();
     } catch (error: any) {
       console.error('Erro ao atualizar o perfil:', error.response?.data || error.message);
-      Toast.show({
-        type: 'error',
-        text1: 'Erro',
-        text2: error.response?.data?.message || 'Não foi possível atualizar o perfil.',
-      });
+      Alert.alert('Erro', error.response?.data?.message || 'Não foi possível atualizar o perfil.');
     }
   };
 
