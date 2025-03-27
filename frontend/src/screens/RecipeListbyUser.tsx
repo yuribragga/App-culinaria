@@ -29,8 +29,8 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const decodeToken = (token: string) => {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1])); // Decodifica o payload do token JWT
-      return payload.id; // Retorna o ID do usuário
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.id;
     } catch (error) {
       console.error('Erro ao decodificar o token:', error);
       return null;
@@ -72,14 +72,14 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
           return;
         }
 
-        const userId = decodeToken(token); // Decodifica o token para obter o ID do usuário
+        const userId = decodeToken(token);
         if (!userId) {
           console.error('ID do usuário não encontrado no token');
           setLoading(false);
           return;
         }
 
-        fetchRecipesByUser(userId); // Busca as receitas do usuário com o ID correto
+        fetchRecipesByUser(userId);
       };
 
       fetchUserIdAndRecipes();

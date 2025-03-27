@@ -31,7 +31,7 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
   const [error, setError] = useState<string | null>(null);
   const [loggedInUserId, setLoggedInUserId] = useState<number | null>(null);
   const [isFavorite, setIsFavorite] = useState<boolean>(false); 
-  const { addFavorite, removeFavorite, favorites } = useContext(AuthContext);
+  const { addFavorite, removeFavorite, favorites, isLoggedIn } = useContext(AuthContext);
 
   const fetchRecipeDetails = async () => {
     try {
@@ -138,15 +138,18 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
           <Text style={styles.editButtonText}>Editar Receita</Text>
         </TouchableOpacity>
       )}
+      
       <View style={styles.header}>
         <Text style={styles.recipeName}>{recipe.name}</Text>
-        <TouchableOpacity onPress={handleToggleFavorite}>
-          <Icon
-            name={isFavorite ? 'favorite' : 'favorite-border'}
-            size={30}
-            color={isFavorite ? 'red' : '#666'}
-          />
-        </TouchableOpacity>
+        {isLoggedIn && (
+          <TouchableOpacity onPress={handleToggleFavorite}>
+            <Icon
+              name={isFavorite ? 'favorite' : 'favorite-border'}
+              size={30}
+              color={isFavorite ? 'red' : '#666'}
+            />
+          </TouchableOpacity>
+        )}
       </View>
       <Text style={styles.recipeDescription}>{recipe.description}</Text>
 

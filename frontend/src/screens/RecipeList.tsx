@@ -33,15 +33,13 @@ const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-  
+
     const filtered = recipes.filter((recipe) => {
-      const ingredients = recipe.ingredients || ''; 
       return (
-        recipe.name.toLowerCase().includes(query.toLowerCase()) || 
-        ingredients.toLowerCase().includes(query.toLowerCase())   
+        recipe.name.toLowerCase().includes(query.toLowerCase())
       );
     });
-  
+
     setFilteredRecipes(filtered);
   };
 
@@ -62,7 +60,6 @@ const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Title style={styles.title}>Receitas</Title>
 
       <Searchbar
         placeholder="Pesquisar Receita"

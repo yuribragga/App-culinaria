@@ -23,7 +23,6 @@ const Favorites: React.FC<{ navigation: any }> = ({ navigation }) => {
   if (favorites.length === 0) {
     return (
       <View style={styles.container}>
-        <Title style={styles.title}>Favoritos</Title>
         <Text style={styles.emptyText}>Você ainda não tem receitas favoritas.</Text>
       </View>
     );
@@ -31,7 +30,6 @@ const Favorites: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Title style={styles.title}>Favoritos</Title>
       <FlatList
         data={favorites}
         keyExtractor={(item) => item.id.toString()}

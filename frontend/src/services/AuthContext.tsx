@@ -54,13 +54,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
   
-      console.log('Token JWT armazenado:', token);
       await AsyncStorage.setItem('token', token); 
       setIsLoggedIn(true);
-      setUser(user);
-  
-      
-      console.log('ID do usuário após login:', user.id);
+      setUser(user);    
   
     } catch (error: any) {
       console.error('Erro ao fazer login:', error);
@@ -73,10 +69,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   
   
-  const logout = () => {
-    setIsLoggedIn(false);
-    setUser(null);
-    setFavorites([]);
+  const logout = async () => {
+    try {
+      await AsyncStorage.removeItem('token');
+      setIsLoggedIn(false);
+      setUser(null);
+      setFavorites([]);  
+    } catch (error) {
+    }
   };
 
   const fetchFavorites = async () => {

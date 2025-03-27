@@ -41,7 +41,17 @@ const App = () => {
             <Stack.Screen
               name="RecipeDetails"
               component={RecipeDetails}
-              options={{ title: 'Detalhes da Receita' }}
+              options={{
+                headerShown: true,
+                title: 'Editar Receita',
+                headerStyle: {
+                  backgroundColor: '#9BC584',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+              }}
             />
             <Stack.Screen
               name="RecipeListbyUser"

@@ -20,8 +20,20 @@ const RecipeStack = () => (
     <Stack.Screen
       name="RecipeList"
       component={RecipeList}
-      options={{ headerShown: false }}
+      options={{
+        headerShown: true,
+        title: 'Receitas',
+        headerStyle: {
+          backgroundColor: '#9BC584',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        headerLeft: () => null,
+      }}
     />
+
     <Stack.Screen
       name="RecipeDetails"
       component={RecipeDetails}
@@ -38,21 +50,21 @@ const RecipeStack = () => (
       }}
     />
     <Stack.Screen
-            name="RecipeListbyUser"
-            component={RecipeListbyUser}
-            options={{
-              headerShown: true,
-              title: 'Minhas Receitas',
-              headerStyle: {
-                backgroundColor: '#9BC584',
-              },
-              headerTintColor: '#fff',
-              headerTitleStyle: {
-                fontWeight: 'bold',
-              },
-            }}
-          />
-    
+      name="RecipeListbyUser"
+      component={RecipeListbyUser}
+      options={{
+        headerShown: true,
+        title: 'Minhas Receitas',
+        headerStyle: {
+          backgroundColor: '#9BC584',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+      }}
+    />
+
   </Stack.Navigator>
 );
 
@@ -119,11 +131,11 @@ const Navbar: React.FC = () => {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'help';
 
-          if (route.name === 'Recipes') {
+          if (route.name === 'Receitas') {
             iconName = focused ? 'list' : 'list-outline';
-          } else if (route.name === 'Favorites') {
+          } else if (route.name === 'Favoritos') {
             iconName = focused ? 'heart' : 'heart-outline';
-          } else if (route.name === 'Profile') {
+          } else if (route.name === 'Perfil') {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'Settings') {
             iconName = focused ? 'settings' : 'settings-outline';
@@ -140,9 +152,20 @@ const Navbar: React.FC = () => {
         },
       })}
     >
-      <Tab.Screen name="Recipes" component={RecipeStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Favorites" component={Favorites} options={{headerShown: false}}/>
+      <Tab.Screen name="Receitas" component={RecipeStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Perfil" component={ProfileStack} options={{ headerShown: false }} />
+      <Tab.Screen name="Favoritos" component={Favorites} options={{
+        headerShown: true,
+        title: 'Favoritos',
+        headerStyle: {
+          backgroundColor: '#9BC584',
+        },
+        headerTintColor: '#fff',
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        headerLeft: () => null,
+      }} />
     </Tab.Navigator>
   );
 };

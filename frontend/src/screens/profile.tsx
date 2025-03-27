@@ -13,8 +13,8 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       if (user) {
         await api.delete(`/auth/delete/${user.id}`);
         Alert.alert('Conta deletada com sucesso!');
-        logout(); // Desloga o usuário
-        navigation.navigate('Login'); // Redireciona para a tela de login
+        logout(); 
+        navigation.navigate('Login'); 
       } else {
         throw new Error('Usuário não encontrado.');
       }
@@ -25,7 +25,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const handleEditProfile = () => {
-    navigation.navigate('UserEdit'); // Navega para a página de edição de usuário
+    navigation.navigate('UserEdit'); 
   };
 
   const getFlagEmoji = (isoCode: string) => {
@@ -81,7 +81,6 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
             Deletar Conta
           </Button>
 
-          {/* Modal de Confirmação */}
           <Modal
             visible={modalVisible}
             transparent

@@ -2,6 +2,7 @@ import React, { useState, useContext } from 'react';
 import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { AuthContext } from '../services/AuthContext'; 
+import Ionicons from '@expo/vector-icons/Ionicons';
 
 const CircularMenu: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -48,7 +49,7 @@ const CircularMenu: React.FC<{ navigation: any }> = ({ navigation }) => {
 
       <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
         <Animated.View style={{ transform: [{ rotate: rotateInterpolation }] }}>
-          <AntDesign name="pluscircle" size={60} color="#9BC584" />
+          <Ionicons name="ellipsis-horizontal-circle-sharp" size={64} color="#9BC584" />
         </Animated.View>
       </TouchableOpacity>
     </View>
