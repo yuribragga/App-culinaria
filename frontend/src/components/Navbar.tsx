@@ -9,8 +9,8 @@ import RecipeListbyUser from '../screens/RecipeListbyUser';
 import Login from '../screens/Login';
 import Register from '../screens/Register';
 import Favorites from '../screens/Favorites';
-import Settings from '../screens/settings';
 import { AuthContext } from '../services/AuthContext';
+import UserEdit from '../screens/UserEdit';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -85,11 +85,28 @@ const ProfileStack = () => {
           />
         </>
       ) : (
-        <Stack.Screen
-          name="Profile"
-          component={Profile}
-          options={{ headerShown: false }}
-        />
+        <>
+          <Stack.Screen
+            name="Profile"
+            component={Profile}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="UserEdit"
+            component={UserEdit}
+            options={{
+              headerShown: true,
+              title: 'Editar Perfil',
+              headerStyle: {
+                backgroundColor: '#9BC584',
+              },
+              headerTintColor: '#fff',
+              headerTitleStyle: {
+                fontWeight: 'bold',
+              },
+            }}
+          />
+        </>
       )}
     </Stack.Navigator>
   );
@@ -115,18 +132,17 @@ const Navbar: React.FC = () => {
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#604490',
-        tabBarInactiveTintColor: '#ccc',
+        tabBarInactiveTintColor: '#fff',
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: '#9BC584',
           borderTopWidth: 0,
           elevation: 5,
         },
       })}
     >
       <Tab.Screen name="Recipes" component={RecipeStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Favorites" component={Favorites} options={{headerShown: false}}/>
       <Tab.Screen name="Profile" component={ProfileStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Settings" component={Settings} options={{headerShown: false}}/>
+      <Tab.Screen name="Favorites" component={Favorites} options={{headerShown: false}}/>
     </Tab.Navigator>
   );
 };

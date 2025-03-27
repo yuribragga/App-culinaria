@@ -13,7 +13,7 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
     const fetchRecipe = async () => {
       try {
         const response = await api.get(`/recipes/${id}`);
-        setRecipe(response.data.recipe); // Certifique-se de que o campo correto está sendo usado
+        setRecipe(response.data.recipe); 
       } catch (error: any) {
         console.error('Erro ao carregar receita:', error.response?.data || error.message);
         setError('Erro ao carregar a receita. Tente novamente mais tarde.');

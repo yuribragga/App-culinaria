@@ -8,7 +8,7 @@ const SECRET_KEY = process.env.JWT_SECRET || 'seu_segredo_super_secreto';
 
 export const register = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { email, password, nationality, phoneNumber, name, socialName } = req.body;
+    const { email, password, nationality, phoneNumber, name, socialName, profileImage } = req.body; 
 
     if (!email || !password || !nationality || !phoneNumber || !name) {
       res.status(400).json({ message: 'Email, senha, nacionalidade, número de celular e nome são obrigatórios' });
@@ -31,7 +31,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       nationality,
       phoneNumber,
       name,
-      socialName, 
+      socialName,
+      profileImage,
     });
 
     await userRepository.save(newUser);
@@ -45,6 +46,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         phoneNumber: newUser.phoneNumber,
         name: newUser.name,
         socialName: newUser.socialName,
+        profileImage: newUser.profileImage,
       },
     });
   } catch (error) {
@@ -92,28 +94,30 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = req.user?.id; 
-    const { email, nationality, phoneNumber, name, socialName } = req.body;
-
-    if (!userId) {
-      res.status(401).json({ message: 'Usuário não autenticado' });
-      return;
-    }
+    const { userId } = req.params;
+    const { email, nationality, phoneNumber, name, socialName, password, profileImage } = req.body;
 
     const userRepository = AppDataSource.getRepository(User);
-    const user = await userRepository.findOne({ where: { id: userId } });
+
+ 
+    const user = await userRepository.findOne({ where: { id: Number(userId) } });
 
     if (!user) {
       res.status(404).json({ message: 'Usuário não encontrado' });
       return;
     }
 
- 
     user.email = email || user.email;
     user.nationality = nationality || user.nationality;
     user.phoneNumber = phoneNumber || user.phoneNumber;
     user.name = name || user.name;
     user.socialName = socialName || user.socialName;
+    user.profileImage = profileImage || user.profileImage;
+
+ 
+    if (password) {
+      user.password = await bcrypt.hash(password, 10);
+    }
 
     await userRepository.save(user);
 
@@ -126,6 +130,7 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         phoneNumber: user.phoneNumber,
         name: user.name,
         socialName: user.socialName,
+        profileImage: user.profileImage,
       },
     });
   } catch (error) {

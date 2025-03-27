@@ -27,7 +27,7 @@ export class User {
   @OneToMany(() => Recipe, (recipe) => recipe.user)
   recipes!: Recipe[];
 
-  @Column({ type: 'blob', nullable:true})
+  @Column({ type: 'text', nullable: true })
   profileImage!: Buffer | null;
 
   @ManyToMany(() => Recipe)

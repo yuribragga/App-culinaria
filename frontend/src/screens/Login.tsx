@@ -35,7 +35,7 @@ const Login: React.FC = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
-      <Title style={styles.title}>Bem-vindo de volta!</Title>
+      <Title style={styles.title}>Bem-vindo ao Recipe Recipe's!</Title>
       <Text style={styles.subtitle}>Faça login para continuar</Text>
 
       <TextInput
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#9BC584',
   },
   subtitle: {
     fontSize: 16,

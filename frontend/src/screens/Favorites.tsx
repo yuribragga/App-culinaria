@@ -8,7 +8,7 @@ const Favorites: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   useEffect(() => {
     if (isLoggedIn) {
-      fetchFavorites(); // Busca os favoritos apenas se o usuário estiver logado
+      fetchFavorites();
     }
   }, [isLoggedIn]);
 
@@ -23,6 +23,7 @@ const Favorites: React.FC<{ navigation: any }> = ({ navigation }) => {
   if (favorites.length === 0) {
     return (
       <View style={styles.container}>
+        <Title style={styles.title}>Favoritos</Title>
         <Text style={styles.emptyText}>Você ainda não tem receitas favoritas.</Text>
       </View>
     );
@@ -64,12 +65,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24, 
     textAlign: 'center',
-    marginTop: 25,
-    marginBottom: 8,
+    paddingVertical: 10,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#FFF',
+    backgroundColor: '#9BC584',
+    borderRadius: 8, 
+    overflow: 'hidden', 
+    marginBottom: 16,
+    marginTop:8, 
+    elevation: 4, 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    
   },
   emptyText: {
     textAlign: 'center',

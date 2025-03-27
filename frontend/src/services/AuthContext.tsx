@@ -5,6 +5,7 @@ import api from './api';
 interface AuthContextType {
   isLoggedIn: boolean;
   user: User | null;
+  setUser: (user: User) => void;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   favorites: Recipe[];
@@ -14,10 +15,13 @@ interface AuthContextType {
 }
 
 interface User {
+  id: number;
   name: string;
+  socialName: string;
   email: string;
   phoneNumber: string;
   nationality: string;
+  profileImage?: string;
 }
 
 interface Recipe {
@@ -30,6 +34,7 @@ interface Recipe {
 export const AuthContext = createContext<AuthContextType>({
   isLoggedIn: false,
   user: null,
+  setUser: () => {},
   login: async () => {},
   logout: () => {},
   favorites: [],
@@ -45,17 +50,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string) => {
     try {
-      console.log('Dados enviados para o backend:', { email, password }); // Log para verificar os dados
+      console.log('Dados enviados para o backend:', { email, password }); 
       const response = await api.post('/auth/login', { email, password });
       const { token, user } = response.data;
   
-      console.log('Token JWT armazenado:', token); // Log para verificar o token armazenado
-      await AsyncStorage.setItem('token', token); // Armazena o token no AsyncStorage
+      console.log('Token JWT armazenado:', token);
+      await AsyncStorage.setItem('token', token); 
       setIsLoggedIn(true);
-      setUser(user); // Atualiza o estado do usuário
+      setUser(user);
   
-      // Adiciona o log para verificar o ID do usuário
-      console.log('ID do usuário após login:', user.id); // Log o ID do usuário após o login
+      
+      console.log('ID do usuário após login:', user.id);
   
     } catch (error: any) {
       console.error('Erro ao fazer login:', error);
@@ -71,12 +76,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     setIsLoggedIn(false);
     setUser(null);
-    setFavorites([]); // Limpa os favoritos ao fazer logout
+    setFavorites([]);
   };
 
   const fetchFavorites = async () => {
     try {
-      const response = await api.get('/favorites/list'); // Endpoint para listar favoritos
+      const response = await api.get('/favorites/list');
       setFavorites(response.data.favorites);
     } catch (error) {
       console.error('Erro ao buscar favoritos:', error);
@@ -85,7 +90,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addFavorite = async (recipeId: number) => {
     try {
-      const response = await api.post('/favorites/add', { recipeId }); // Endpoint para adicionar favorito
+      const response = await api.post('/favorites/add', { recipeId });
       setFavorites(response.data.favorites);
     } catch (error) {
       console.error('Erro ao adicionar favorito:', error);
@@ -94,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const removeFavorite = async (recipeId: number) => {
     try {
-      const response = await api.post('/favorites/remove', { recipeId }); // Endpoint para remover favorito
+      const response = await api.post('/favorites/remove', { recipeId });
       setFavorites(response.data.favorites);
     } catch (error) {
       console.error('Erro ao remover favorito:', error);
@@ -106,6 +111,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         isLoggedIn,
         user,
+        setUser,
         login,
         logout,
         favorites,

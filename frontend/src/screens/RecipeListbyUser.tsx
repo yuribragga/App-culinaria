@@ -38,7 +38,7 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
     }
 
     try {
-      console.log('Token enviado:', token); // Log para depuração
+      console.log('Token enviado:', token); 
       const response = await api.get(`/recipes/user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -55,7 +55,7 @@ const RecipeListbyUser: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      const userId = 1; // Replace with the actual user ID
+      const userId = 1; 
       fetchRecipesByUser(userId);
     }, [])
   );

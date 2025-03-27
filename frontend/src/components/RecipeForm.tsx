@@ -153,7 +153,9 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
         left={<TextInput.Icon icon="account-group" />}
       />
 
-      {image && <Image source={{ uri: image }} style={styles.image} />}
+      {image ? (
+        <Image source={{ uri: image }} style={styles.image} />
+      ) : null}
 
       <Button mode="outlined" onPress={pickImage} style={styles.button}>
         Escolher Imagem da Galeria

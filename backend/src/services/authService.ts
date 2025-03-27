@@ -1,17 +1,17 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
-import { AppDataSource } from '../data-source';  // Supondo que você tenha uma fonte de dados configurada
+import { AppDataSource } from '../data-source'; 
 import dotenv from 'dotenv';
 
-// Carregar variáveis de ambiente do arquivo .env
+
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET as string; // Usando variável de ambiente
+const JWT_SECRET = process.env.JWT_SECRET as string;
 
-// Função para registrar o usuário
+
 export const registerUser = async (email: string, password: string): Promise<User> => {
-  // Verifica se os campos estão vazios
+ 
   if (!email || !password) {
     throw new Error('Email e senha são obrigatórios');
   }

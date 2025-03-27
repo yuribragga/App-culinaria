@@ -7,7 +7,7 @@ import { User } from '../entities/User';
 export const createRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, description, ingredients, instructions, time, servings, image } = req.body;
-    const userId = req.user?.id; // Obtém o ID do usuário autenticado do middleware `authenticateToken`
+    const userId = req.user?.id;
 
     if (!userId) {
       res.status(401).json({ message: 'Usuário não autenticado' });
@@ -79,7 +79,7 @@ export const getRecipeById = async (req: Request, res: Response): Promise<void> 
 
     const recipe = await recipeRepository.findOne({
       where: { id: Number(id) },
-      relations: ['user'], // Inclui os dados do autor da receita
+      relations: ['user'], 
     });
 
     if (!recipe) {
@@ -158,7 +158,6 @@ export const getRecipesByUserId = async (req: Request, res: Response): Promise<v
     console.log('ID do usuário recebido:', req.params.id);
     console.log('ID convertido para número:', Number(req.params.id));
 
-    // Valida e converte o ID para número
     if (isNaN(userId)) {
       res.status(400).json({ message: 'ID do usuário inválido' });
       return;
@@ -168,7 +167,7 @@ export const getRecipesByUserId = async (req: Request, res: Response): Promise<v
 
     const recipes = await recipeRepository.find({
       where: { user: { id: userId } },
-      relations: ['user'], // Inclui os dados do autor da receita
+      relations: ['user'],
     });
 
     if (recipes.length === 0) {

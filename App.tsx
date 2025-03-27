@@ -1,4 +1,5 @@
 import React from 'react';
+import { Provider as PaperProvider } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Welcome from './frontend/src/screens/Welcome';
@@ -8,11 +9,17 @@ import RecipeCreate from './frontend/src/screens/RecipeCreate';
 import RecipeEdit from './frontend/src/screens/RecipeEdit';
 import RecipeListbyUser from './frontend/src/screens/RecipeListbyUser';
 import RecipeDetails from './frontend/src/screens/RecipeDetails';
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs([
+  'Warning: CountryModal: Support for defaultProps will be removed',
+]);
 
 const Stack = createStackNavigator();
 
 const App = () => {
   return (
+    <PaperProvider>
     <AuthProvider>
       <NavigationContainer>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -43,6 +50,7 @@ const App = () => {
         </Stack.Navigator>
       </NavigationContainer>
     </AuthProvider>
+    </PaperProvider>
   );
 };
 

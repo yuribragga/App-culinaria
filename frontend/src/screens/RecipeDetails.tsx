@@ -25,28 +25,27 @@ interface Recipe {
 }
 
 const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navigation }) => {
-  const { id } = route.params; // Obtém o ID da receita passado pela navegação
+  const { id } = route.params; 
   const [recipe, setRecipe] = useState<Recipe | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [loggedInUserId, setLoggedInUserId] = useState<number | null>(null);
-  const [isFavorite, setIsFavorite] = useState<boolean>(false); // Estado para o favorito
-  const { addFavorite, removeFavorite, favorites } = useContext(AuthContext); // Obtém as funções do contexto
+  const [isFavorite, setIsFavorite] = useState<boolean>(false); 
+  const { addFavorite, removeFavorite, favorites } = useContext(AuthContext);
 
   const fetchRecipeDetails = async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/recipes/${id}`); // Faz a requisição para o backend
-      setRecipe(response.data.recipe); // Atualiza o estado com os detalhes da receita
+      const response = await api.get(`/recipes/${id}`);
+      setRecipe(response.data.recipe);
 
-      // Verifica se a receita já está nos favoritos
       const isFav = favorites.some((fav) => fav.id === id);
       setIsFavorite(isFav);
     } catch (error) {
       console.error('Erro ao buscar detalhes da receita:', error);
       setError('Erro ao carregar os detalhes da receita.');
     } finally {
-      setLoading(false); // Finaliza o carregamento
+      setLoading(false); 
     }
   };
 
@@ -54,7 +53,7 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
     try {
       const token = await AsyncStorage.getItem('token');
       if (token) {
-        const decodedToken: any = JSON.parse(atob(token.split('.')[1])); // Decodifica o token
+        const decodedToken: any = JSON.parse(atob(token.split('.')[1]));
         setLoggedInUserId(decodedToken.id);
       }
     } catch (error) {
@@ -72,17 +71,17 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
   const handleToggleFavorite = async () => {
     try {
       if (isFavorite) {
-        await removeFavorite(recipe!.id); // Remove a receita dos favoritos
+        await removeFavorite(recipe!.id);
         alert('Receita removida dos favoritos!');
       } else {
-        await addFavorite(recipe!.id); // Adiciona a receita aos favoritos
+        await addFavorite(recipe!.id);
         alert('Receita adicionada aos favoritos!');
       }
-      setIsFavorite(!isFavorite); // Alterna o estado de favorito
+      setIsFavorite(!isFavorite); 
     } catch (error: any) {
       if (error.response?.status === 401) {
         alert('Sessão expirada. Por favor, faça login novamente.');
-        // Redirecione o usuário para a tela de login, se necessário
+
       } else {
         alert('Erro ao atualizar favoritos.');
       }
@@ -117,7 +116,13 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+      {recipe.image ? (
+        <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+      ) : (
+        <View style={styles.placeholderImage}>
+          <Text style={styles.placeholderText}>Sem Imagem</Text>
+        </View>
+      )}
       {Number(loggedInUserId) === Number(recipe.user?.id) && (
         <TouchableOpacity
           style={styles.editButton}
@@ -138,7 +143,6 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
       </View>
       <Text style={styles.recipeDescription}>{recipe.description}</Text>
 
-      {/* Exibe o autor da receita */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Autor da Receita</Text>
         <Text style={styles.info}>Nome: {recipe.user?.name}</Text>
@@ -194,6 +198,19 @@ const styles = StyleSheet.create({
     height: 200,
     borderRadius: 8,
     marginBottom: 16,
+  },
+  placeholderImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#e0e0e0',
+  },
+  placeholderText: {
+    fontSize: 18,
+    color: '#666',
   },
   header: {
     flexDirection: 'row',
