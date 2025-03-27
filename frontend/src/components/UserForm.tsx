@@ -1,16 +1,20 @@
 import React, { useState } from 'react';
-import { ScrollView, StyleSheet, View, TouchableOpacity, Modal, Image, Alert } from 'react-native';
+import { ScrollView, StyleSheet, View, TouchableOpacity, Modal, FlatList, Text, Image, Alert } from 'react-native';
 import { TextInput, Button, Title, HelperText, Searchbar } from 'react-native-paper';
 import PhoneInput from 'react-native-phone-number-input';
 import validator from 'validator';
 import countries from 'world-countries';
 import * as ImagePicker from 'expo-image-picker';
 
-const countryList = countries.map((country) => ({
-  name: country.name.common,
-  code: country.cca2,
-  flag: country.flag,
-}));
+const countryList = countries
+  .map((country) => ({
+    name: country.name.common,
+    code: country.cca2,
+    flag: country.flag,
+  }))
+  .filter((country, index, self) => 
+    index === self.findIndex((c) => c.code === country.code)
+  );
 
 interface UserFormProps {
   initialValues?: {
@@ -86,6 +90,11 @@ const UserForm: React.FC<UserFormProps> = ({ initialValues = {}, onSubmit, submi
     }
   };
 
+  const handleSelectCountry = (country: string) => {
+    setNationality(country);
+    setModalVisible(false);
+  };
+
   const handleSubmit = () => {
     if (password !== confirmPassword) {
       setErrorMessage('As senhas não coincidem');
@@ -114,6 +123,40 @@ const UserForm: React.FC<UserFormProps> = ({ initialValues = {}, onSubmit, submi
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Title style={styles.title}>{isEditing ? 'Editar Perfil' : 'Cadastro de Usuário'}</Title>
+
+      <Modal visible={modalVisible} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Searchbar
+              placeholder="Pesquisar Nacionalidade"
+              onChangeText={setSearchQuery}
+              value={searchQuery}
+              style={styles.searchbar}
+            />
+            <FlatList
+              data={filteredCountries}
+              keyExtractor={(item) => item.code}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.countryItem}
+                  onPress={() => handleSelectCountry(item.code)}
+                >
+                  <Text style={styles.countryText}>
+                    {item.flag} {item.name} ({item.code})
+                  </Text>
+                </TouchableOpacity>
+              )}
+            />
+            <Button mode="text" onPress={() => setModalVisible(false)} style={styles.closeButton}>
+              Fechar
+            </Button>
+          </View>
+        </View>
+      </Modal>
+
+      <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.nationalityField}>
+        <Text style={styles.nationalityText}>Nacionalidade: {nationality}</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
         {profileImage ? (
@@ -255,6 +298,46 @@ const styles = StyleSheet.create({
   },
   buttonContent: {
     height: 50,
+  },
+  nationalityField: {
+    marginBottom: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+  },
+  nationalityText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '90%',
+    maxHeight: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+  },
+  searchbar: {
+    marginBottom: 16,
+  },
+  countryItem: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  countryText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  closeButton: {
+    marginTop: 16,
   },
   imageContainer: {
     alignItems: 'center',

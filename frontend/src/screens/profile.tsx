@@ -11,7 +11,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   const getFlagEmoji = (isoCode: string) => {
-    if (!isoCode) return '🏳️'; // Retorna uma bandeira genérica se o código ISO não for válido
+    if (!isoCode) return '🏳️';
     return isoCode
       .toUpperCase()
       .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
@@ -119,7 +119,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   flag: {
-    fontSize: 50,
+    lineHeight: 10,
+    fontSize: 30,
     textAlign: 'center',
   },
   editButton: {

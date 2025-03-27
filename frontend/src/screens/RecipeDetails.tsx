@@ -89,6 +89,13 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
     }
   };
 
+  const getFlagEmoji = (isoCode: string) => {
+    if (!isoCode) return '🏳️'; // Retorna uma bandeira genérica se o código ISO não for válido
+    return isoCode
+      .toUpperCase()
+      .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -146,7 +153,11 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Autor da Receita</Text>
         <Text style={styles.info}>Nome: {recipe.user?.name}</Text>
-        <Text style={styles.info}>Nacionalidade: {recipe.user?.nationality}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text>Nacionalidade: </Text>
+          <Text style={styles.info}>{getFlagEmoji(recipe.user?.nationality || '')}</Text>
+          <Text style={[styles.info, { marginLeft: 8 }]}>{recipe.user?.nationality}</Text>
+        </View>
       </View>
 
       <View style={styles.section}>
