@@ -36,12 +36,7 @@ const Favorites: React.FC<{ navigation: any }> = ({ navigation }) => {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.recipeCard}
-            onPress={() => navigation.navigate('Recipes', {
-              screen: 'RecipeDetails',
-              params: { id: item.id },
-            })
-          }
-          >
+            onPress={() => navigation.navigate('RecipeDetails', { id: item.id })}>
             <Image source={{ uri: item.image }} style={styles.recipeImage} />
             <View style={styles.recipeInfo}>
               <Text style={styles.recipeName}>{item.name}</Text>

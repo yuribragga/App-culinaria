@@ -3,6 +3,7 @@ import { View, StyleSheet, Image, Alert, Modal, TouchableOpacity } from 'react-n
 import { Text, Title, Button } from 'react-native-paper';
 import { AuthContext } from '../services/AuthContext';
 import api from '../services/api';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   const { user, logout } = useContext(AuthContext);
@@ -36,7 +37,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Title style={styles.title}>Perfil</Title>
       {user ? (
         <>
@@ -115,7 +116,7 @@ const Profile: React.FC<{ navigation: any }> = ({ navigation }) => {
       ) : (
         <Text style={styles.info}>Nenhum usuário logado</Text>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
