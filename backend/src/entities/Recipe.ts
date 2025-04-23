@@ -30,4 +30,7 @@ export class Recipe {
   @ManyToOne(() => User, (user) => user.recipes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user!: User;
+
+  @Column({ type: 'text', default: 'Saudável' }) // Use 'text' para SQLite
+  classification!: string; // Valide os valores manualmente no backend
 }

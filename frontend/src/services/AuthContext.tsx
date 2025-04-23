@@ -29,6 +29,7 @@ interface Recipe {
   name: string;
   description: string;
   image: string;
+  classification: string;
 }
 
 export const AuthContext = createContext<AuthContextType>({

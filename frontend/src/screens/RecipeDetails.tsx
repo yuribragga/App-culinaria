@@ -15,6 +15,7 @@ interface Recipe {
   instructions: string;
   time: number;
   servings: number;
+  classification: string;
   userId: number;
   user?: {
     id: number;
@@ -138,6 +139,8 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
           <Text style={styles.editButtonText}>Editar Receita</Text>
         </TouchableOpacity>
       )}
+
+      <Text style={styles.recipeClassiification}>#{recipe.classification}</Text>
       
       <View style={styles.header}>
         <Text style={styles.recipeName}>{recipe.name}</Text>
@@ -153,15 +156,7 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
       </View>
       <Text style={styles.recipeDescription}>{recipe.description}</Text>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Autor da Receita</Text>
-        <Text style={styles.info}>Nome: {recipe.user?.name}</Text>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text>Nacionalidade: </Text>
-          <Text style={styles.info}>{getFlagEmoji(recipe.user?.nationality || '')}</Text>
-          <Text style={[styles.info, { marginLeft: 8 }]}>{recipe.user?.nationality}</Text>
-        </View>
-      </View>
+
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Ingredientes</Text>
@@ -185,6 +180,15 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
         <Text style={styles.sectionTitle}>Informações Adicionais</Text>
         <Text style={styles.info}>Tempo de preparo: {recipe.time} minutos</Text>
         <Text style={styles.info}>Porções: {recipe.servings}</Text>
+      </View>
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Receita criada por:</Text>
+        <Text style={styles.info}>Nome: {recipe.user?.name}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text>Nacionalidade: </Text>
+          <Text style={styles.info}>{getFlagEmoji(recipe.user?.nationality || '')}</Text>
+          <Text style={[styles.info, { marginLeft: 8 }]}>{recipe.user?.nationality}</Text>
+        </View>
       </View>
     </ScrollView>
   );
@@ -241,6 +245,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     marginBottom: 16,
+  },
+  recipeClassiification: {
+    fontSize: 24,
+    flex:1,
+    color: "#604490",
   },
   section: {
     marginBottom: 16,

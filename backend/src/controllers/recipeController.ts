@@ -6,11 +6,16 @@ import { User } from '../entities/User';
 
 export const createRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, ingredients, instructions, time, servings, image } = req.body;
+    const { name, description, ingredients, instructions, time, servings, image, classification } = req.body; // Inclua classification
     const userId = req.user?.id;
 
     if (!userId) {
       res.status(401).json({ message: 'Usuário não autenticado' });
+      return;
+    }
+
+    if (!classification) {
+      res.status(400).json({ message: 'Classificação é obrigatória' });
       return;
     }
 
@@ -24,6 +29,7 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
       time,
       servings,
       image,
+      classification,
       user: { id: userId },
     });
 

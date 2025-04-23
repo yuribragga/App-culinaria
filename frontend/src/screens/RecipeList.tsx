@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, FlatList, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Title, Searchbar } from 'react-native-paper';
+import { Title, Searchbar, Menu, Button } from 'react-native-paper';
 import api from '../services/api';
 import CircularMenu from '../components/CircularMenu';
 import { useFocusEffect } from '@react-navigation/native';
@@ -10,20 +10,35 @@ interface Recipe {
   name: string;
   description: string;
   image: string;
-  ingredients?: string; 
+  classification: string;
+  ingredients?: string;
 }
 
 const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]); 
+  const [filteredRecipes, setFilteredRecipes] = useState<Recipe[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [searchQuery, setSearchQuery] = useState<string>(''); 
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [classification, setClassification] = useState<string>('');
 
-  const fetchRecipes = async () => {
+  const classifications = [
+    { label: 'Todos', value: '' },
+    { label: 'Fitness', value: 'Fitness' },
+    { label: 'Alto Carboidrato', value: 'Alto Carboidrato' },
+    { label: 'Saudável', value: 'Saudável' },
+    { label: 'Vegano', value: 'Vegano' },
+    { label: 'Vegetariano', value: 'Vegetariano' },
+  ];
+
+  const fetchRecipes = async (classification?: string) => {
     try {
-      const response = await api.get('/recipes');
+      setLoading(true);
+      const response = await api.get('/recipes', {
+        params: { classification },
+      });
       setRecipes(response.data.recipes);
-      setFilteredRecipes(response.data.recipes); 
+      setFilteredRecipes(response.data.recipes);
     } catch (error: any) {
       console.error('Erro ao buscar receitas:', error.response?.data || error.message);
     } finally {
@@ -35,12 +50,24 @@ const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
     setSearchQuery(query);
 
     const filtered = recipes.filter((recipe) => {
-      return (
-        recipe.name.toLowerCase().includes(query.toLowerCase())
-      );
+      return recipe.name.toLowerCase().includes(query.toLowerCase());
     });
 
     setFilteredRecipes(filtered);
+  };
+
+  const handleFilter = (value: string) => {
+    setClassification(value);
+    setMenuVisible(false);
+
+    if (value) {
+      // Filtra as receitas com base na classificação selecionada
+      const filtered = recipes.filter((recipe) => recipe.classification === value);
+      setFilteredRecipes(filtered);
+    } else {
+      // Exibe todas as receitas se "Todos" for selecionado
+      setFilteredRecipes(recipes);
+    }
   };
 
   useFocusEffect(
@@ -60,7 +87,6 @@ const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-
       <Searchbar
         placeholder="Pesquisar Receita"
         onChangeText={handleSearch}
@@ -68,8 +94,28 @@ const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
         style={styles.searchbar}
       />
 
+      <View style={styles.menuContainer}>
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={
+            <Button mode="outlined" onPress={() => setMenuVisible(true)}>
+              {classification || 'Filtrar por Classificação'}
+            </Button>
+          }
+        >
+          {classifications.map((item) => (
+            <Menu.Item
+              key={item.value}
+              onPress={() => handleFilter(item.value)}
+              title={item.label}
+            />
+          ))}
+        </Menu>
+      </View>
+
       <FlatList
-        data={filteredRecipes} 
+        data={filteredRecipes}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -85,6 +131,7 @@ const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
             )}
             <View style={styles.recipeInfo}>
               <Text style={styles.recipeName}>{item.name}</Text>
+              <Text style={styles.recipeClassiification}>#{item.classification}</Text>
               <Text style={styles.recipeDescription}>{item.description}</Text>
             </View>
           </TouchableOpacity>
@@ -102,26 +149,12 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 24,
-    textAlign: 'center',
-    paddingVertical: 10,
-    fontWeight: 'bold',
-    color: '#FFF',
-    backgroundColor: '#9BC584',
-    borderRadius: 8,
-    overflow: 'hidden',
-    marginBottom: 16,
-    marginTop: 8,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
   searchbar: {
     marginBottom: 16,
     borderRadius: 8,
+  },
+  menuContainer: {
+    marginBottom: 16,
   },
   loadingContainer: {
     flex: 1,
@@ -161,6 +194,11 @@ const styles = StyleSheet.create({
   recipeDescription: {
     fontSize: 14,
     color: '#666',
+  },
+  recipeClassiification: {
+    fontSize: 12,
+    color: '#604490',
+    marginBottom: 4,
   },
 });
 

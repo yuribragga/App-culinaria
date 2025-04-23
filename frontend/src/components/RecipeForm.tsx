@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Image, Alert } from 'react-native';
-import { TextInput, Button, Title, HelperText } from 'react-native-paper';
+import { TextInput, Button, Title, HelperText, Menu } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
 
 interface RecipeFormProps {
@@ -12,6 +12,7 @@ interface RecipeFormProps {
     time: string;
     servings: string;
     image: string;
+    classification?: string;
   };
   onSubmit: (data: any) => void;
   submitButtonLabel: string;
@@ -32,7 +33,17 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
   const [time, setTime] = useState(String(initialValues?.time || '')); 
   const [servings, setServings] = useState(String(initialValues?.servings || '')); 
   const [image, setImage] = useState<string | null>(initialValues?.image || '');
+  const [classification, setClassification] = useState(initialValues?.classification || '');
+  const [menuVisible, setMenuVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const classifications = [
+    { label: 'Fitness', value: 'Fitness' },
+    { label: 'Alto Carboidrato', value: 'Alto Carboidrato' },
+    { label: 'Saudável', value: 'Saudável' },
+    { label: 'Vegano', value: 'Vegano' },
+    { label: 'Vegetariano', value: 'Vegetariano' },
+  ];
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -72,7 +83,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
   };
 
   const handleSubmit = async () => {
-    if (!name || !description || !ingredients || !instructions || !time || !servings) {
+    if (!name || !description || !ingredients || !instructions || !time || !servings || !classification) {
       setErrorMessage('Por favor, preencha todos os campos obrigatórios.');
       return;
     }
@@ -85,10 +96,13 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
       time: Number(time),
       servings: Number(servings),
       image,
+      classification,
     };
 
+    console.log('Dados enviados para o backend:', recipeData); // Verificar os dados enviados
+
     try {
-     await onSubmit(recipeData);
+      await onSubmit(recipeData);
       Alert.alert('Sucesso', 'Receita salva com sucesso!');
       navigation.navigate('Main', { screen: 'Recipes' });
     } catch (error: any) {
@@ -153,6 +167,30 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
         style={styles.input}
         left={<TextInput.Icon icon="account-group" />}
       />
+
+      <View style={styles.menuContainer}>
+        <Menu
+          visible={menuVisible}
+          onDismiss={() => setMenuVisible(false)}
+          anchor={
+            <Button mode="outlined" onPress={() => setMenuVisible(true)}>
+              {classification || 'Selecione a Classificação'}
+            </Button>
+          }
+        >
+          {classifications.map((item) => (
+            <Menu.Item
+              key={item.value}
+              onPress={() => {
+                console.log('Classificação selecionada:', item.value); // Verificar a classificação selecionada
+                setClassification(item.value);
+                setMenuVisible(false);
+              }}
+              title={item.label}
+            />
+          ))}
+        </Menu>
+      </View>
 
       {image ? (
         <Image source={{ uri: image }} style={styles.image} />
@@ -224,6 +262,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: 'center',
     color: '#BE3B3D',
+  },
+  menuContainer: {
+    marginBottom: 12,
   },
 });
 

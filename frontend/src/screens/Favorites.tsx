@@ -36,13 +36,19 @@ const Favorites: React.FC<{ navigation: any }> = ({ navigation }) => {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.recipeCard}
-            onPress={() => navigation.navigate('RecipeDetails', { id: item.id })}>
-            <Image source={{ uri: item.image }} style={styles.recipeImage} />
+            onPress={() => navigation.navigate('RecipeDetails', { id: item.id })}
+          >
+            {item.image ? (
+              <Image source={{ uri: item.image }} style={styles.recipeImage} />
+            ) : (
+              <View style={styles.placeholderImage}>
+                <Text style={styles.placeholderText}>Sem Imagem</Text>
+              </View>
+            )}
             <View style={styles.recipeInfo}>
               <Text style={styles.recipeName}>{item.name}</Text>
-              <Text style={styles.recipeDescription} numberOfLines={2}>
-                {item.description}
-              </Text>
+              <Text style={styles.recipeClassiification}>#{item.classification}</Text>
+              <Text style={styles.recipeDescription}>{item.description}</Text>
             </View>
           </TouchableOpacity>
         )}
@@ -57,54 +63,52 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 24, 
-    textAlign: 'center',
-    paddingVertical: 10,
-    fontWeight: 'bold',
-    color: '#FFF',
-    backgroundColor: '#9BC584',
-    borderRadius: 8, 
-    overflow: 'hidden', 
-    marginBottom: 16,
-    marginTop:8, 
-    elevation: 4, 
-    shadowColor: '#000', 
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    
-  },
   emptyText: {
     textAlign: 'center',
     fontSize: 18,
     color: '#888',
     marginTop: 20,
   },
+  
   recipeCard: {
     flexDirection: 'row',
     marginBottom: 16,
-    backgroundColor: '#f9f9f9',
+    borderWidth: 1,
+    borderColor: '#ddd',
     borderRadius: 8,
     overflow: 'hidden',
-    elevation: 2,
   },
   recipeImage: {
     width: 100,
     height: 100,
+  },
+  placeholderImage: {
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ddd',
+  },
+  placeholderText: {
+    color: '#666',
   },
   recipeInfo: {
     flex: 1,
     padding: 8,
   },
   recipeName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
   recipeDescription: {
     fontSize: 14,
     color: '#666',
     marginVertical: 4,
+  },
+  recipeClassiification: {
+    fontSize: 12,
+    color: '#604490',
+    marginBottom: 4,
   },
 });
 
