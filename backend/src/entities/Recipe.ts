@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { User } from './User';
+import { Ingredient } from './Ingredient';
 
 @Entity()
 export class Recipe {
@@ -12,11 +13,11 @@ export class Recipe {
   @Column()
   description!: string;
 
-  @Column('simple-array')
-  ingredients!: string;
+  @OneToMany(() => Ingredient, (ingredient) => ingredient.recipe, { cascade: true })
+  ingredients!: Ingredient[];
 
-  @Column()
-  instructions!: string;
+  @Column('simple-array')
+  instructions!: string[];
 
   @Column()
   time!: number;
@@ -24,13 +25,13 @@ export class Recipe {
   @Column()
   servings!: number;
 
-  @Column({ type: 'blob', nullable: true })
-  image!: Buffer | null;
+  @Column({ nullable: true })
+  image!: string;
+
+  @Column()
+  classification!: string;
 
   @ManyToOne(() => User, (user) => user.recipes, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'userId' })
   user!: User;
-
-  @Column({ type: 'text', default: 'Saudável' }) // Use 'text' para SQLite
-  classification!: string; // Valide os valores manualmente no backend
 }

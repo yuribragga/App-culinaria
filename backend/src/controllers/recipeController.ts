@@ -2,11 +2,11 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '../data-source';
 import { Recipe } from '../entities/Recipe';
 import { User } from '../entities/User';
-
+import { Ingredient } from '../entities/Ingredient'; // Importe a entidade Ingredient
 
 export const createRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, ingredients, instructions, time, servings, image, classification } = req.body; // Inclua classification
+    const { name, description, ingredients, instructions, time, servings, image, classification } = req.body;
     const userId = req.user?.id;
 
     if (!userId) {
@@ -20,12 +20,13 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
     }
 
     const recipeRepository = AppDataSource.getRepository(Recipe);
+    const ingredientRepository = AppDataSource.getRepository(Ingredient);
 
+    // Cria a receita
     const newRecipe = recipeRepository.create({
       name,
       description,
-      ingredients,
-      instructions,
+      instructions: Array.isArray(instructions) ? instructions : instructions.split('\n'), // Certifique-se de que é um array
       time,
       servings,
       image,
@@ -33,9 +34,23 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
       user: { id: userId },
     });
 
-    await recipeRepository.save(newRecipe);
+    const savedRecipe = await recipeRepository.save(newRecipe);
 
-    res.status(201).json({ message: 'Receita criada com sucesso', recipe: newRecipe });
+    // Salva os ingredientes vinculados à receita
+    if (Array.isArray(ingredients)) {
+      const ingredientEntities = ingredients.map((ingredient: { name: string; quantity: number; unit: string }) =>
+        ingredientRepository.create({
+          name: ingredient.name,
+          quantity: String(ingredient.quantity),
+          unit: ingredient.unit,
+          recipe: savedRecipe,
+        })
+      );
+
+      await ingredientRepository.save(ingredientEntities);
+    }
+
+    res.status(201).json({ message: 'Receita criada com sucesso', recipe: savedRecipe });
   } catch (error) {
     console.error('Erro ao criar receita:', error);
     res.status(500).json({ message: 'Erro no servidor' });
@@ -85,7 +100,7 @@ export const getRecipeById = async (req: Request, res: Response): Promise<void> 
 
     const recipe = await recipeRepository.findOne({
       where: { id: Number(id) },
-      relations: ['user'], 
+      relations: ['ingredients','user'], 
     });
 
     if (!recipe) {

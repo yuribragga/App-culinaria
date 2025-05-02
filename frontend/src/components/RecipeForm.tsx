@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Image, Alert } from 'react-native';
 import { TextInput, Button, Title, HelperText, Menu } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
+const defaultImage = require('../../assets/images/imagem_padrao.jpg'); // Imagem padrão para receitas sem imagem
 
 interface RecipeFormProps {
   initialValues?: {
     name: string;
     description: string;
-    ingredients: string;
-    instructions: string;
+    ingredients: { name: string; quantity: string; unit: string }[];
+    instructions: string[];
     time: string;
     servings: string;
     image: string;
@@ -20,19 +21,21 @@ interface RecipeFormProps {
 }
 
 const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submitButtonLabel, navigation }) => {
+
+
   const [name, setName] = useState(initialValues?.name || '');
   const [description, setDescription] = useState(initialValues?.description || '');
-  const [ingredients, setIngredients] = useState(
-    Array.isArray(initialValues?.ingredients)
+  const [ingredientsList, setIngredientsList] = useState<{ name: string; quantity: string; unit: string }[]>(
+    Array.isArray(initialValues?.ingredients) && initialValues.ingredients.length > 0
       ? initialValues.ingredients
-          .map((item: any) => (typeof item === 'string' ? item : item.name || ''))
-          .join(', ')
-      : initialValues?.ingredients || ''
+      : [{ name: '', quantity: '', unit: '' }]
   );
-  const [instructions, setInstructions] = useState(initialValues?.instructions || '');
-  const [time, setTime] = useState(String(initialValues?.time || '')); 
-  const [servings, setServings] = useState(String(initialValues?.servings || '')); 
-  const [image, setImage] = useState<string | null>(initialValues?.image || '');
+  const [instructionsList, setInstructionsList] = useState<string[]>(
+    Array.isArray(initialValues?.instructions) ? initialValues.instructions : ['']
+  );
+  const [time, setTime] = useState(String(initialValues?.time || ''));
+  const [servings, setServings] = useState(String(initialValues?.servings || ''));
+  const [image, setImage] = useState<string | null>(initialValues?.image || null);
   const [classification, setClassification] = useState(initialValues?.classification || '');
   const [menuVisible, setMenuVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -53,7 +56,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -63,27 +66,50 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
       setImage(result.assets[0].uri);
     }
   };
-  
+
   const takePhoto = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') {
       alert('Precisamos da permissão para acessar sua câmera!');
       return;
     }
-  
+
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
-  
+
     if (!result.canceled) {
       setImage(result.assets[0].uri);
     }
   };
 
+  const addIngredient = () => {
+    setIngredientsList([...ingredientsList, { name: '', quantity: '', unit: '' }]);
+  };
+
+  const updateIngredient = (index: number, field: string, value: string) => {
+    const updated = [...ingredientsList];
+    updated[index] = { ...updated[index], [field]: value };
+    setIngredientsList(updated);
+  };
+
+  const removeIngredient = (index: number) => {
+    const updated = ingredientsList.filter((_, i) => i !== index);
+    setIngredientsList(updated);
+  };
+
+  const addInstruction = () => setInstructionsList([...instructionsList, '']);
+
+  const updateInstruction = (index: number, value: string) => {
+    const updated = [...instructionsList];
+    updated[index] = value;
+    setInstructionsList(updated);
+  };
+
   const handleSubmit = async () => {
-    if (!name || !description || !ingredients || !instructions || !time || !servings || !classification) {
+    if (!name || !description || ingredientsList.length === 0 || instructionsList.length === 0 || !time || !servings || !classification) {
       setErrorMessage('Por favor, preencha todos os campos obrigatórios.');
       return;
     }
@@ -91,15 +117,15 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
     const recipeData = {
       name,
       description,
-      ingredients: ingredients.split(','),
-      instructions,
+      ingredients: ingredientsList,
+      instructions: instructionsList,
       time: Number(time),
       servings: Number(servings),
-      image,
+      image: image || Image.resolveAssetSource(defaultImage).uri, // Usa a imagem padrão se nenhuma for selecionada
       classification,
     };
 
-    console.log('Dados enviados para o backend:', recipeData); // Verificar os dados enviados
+    console.log('Dados enviados para o backend:', recipeData);
 
     try {
       await onSubmit(recipeData);
@@ -113,7 +139,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-
       <TextInput
         label="Nome da Receita"
         value={name}
@@ -131,24 +156,67 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
         multiline
         left={<TextInput.Icon icon="text" />}
       />
-      <TextInput
-        label="Ingredientes (separados por vírgula)"
-        value={ingredients}
-        onChangeText={setIngredients}
-        mode="outlined"
-        style={styles.input}
-        multiline
-        left={<TextInput.Icon icon="format-list-bulleted" />}
-      />
-      <TextInput
-        label="Instruções"
-        value={instructions}
-        onChangeText={setInstructions}
-        mode="outlined"
-        style={styles.input}
-        multiline
-        left={<TextInput.Icon icon="script-text" />}
-      />
+      <View style={styles.ingredientsContainer}>
+        <Title>Ingredientes</Title>
+        {ingredientsList.map((ingredient, index) => (
+          <View key={index} style={styles.ingredientRow}>
+            <TextInput
+              label="Nome"
+              value={ingredient.name}
+              onChangeText={(value) => updateIngredient(index, 'name', value)}
+              mode="outlined"
+              style={[styles.input, styles.ingredientNameInput]}
+              left={<TextInput.Icon icon="format-list-bulleted" />}
+            />
+            <View style={styles.quantityUnitRow}>
+              <TextInput
+                label="Quantidade"
+                value={ingredient.quantity}
+                onChangeText={(value) => updateIngredient(index, 'quantity', value)}
+                mode="outlined"
+                style={[styles.input, styles.ingredientSmallInput]}
+                keyboardType="numeric"
+                left={<TextInput.Icon icon="scale" />}
+              />
+              <TextInput
+                label="Unidade"
+                value={ingredient.unit}
+                onChangeText={(value) => updateIngredient(index, 'unit', value)}
+                mode="outlined"
+                style={[styles.input, styles.ingredientSmallInput]}
+                left={<TextInput.Icon icon="ruler" />}
+              />
+            </View>
+            <Button
+              mode="text"
+              onPress={() => removeIngredient(index)}
+              style={styles.removeButton}
+              labelStyle={styles.removeButtonText}
+            >
+              Remover
+            </Button>
+          </View>
+        ))}
+        <Button mode="outlined" onPress={addIngredient} style={styles.button}>
+          Adicionar Ingrediente
+        </Button>
+      </View>
+      <View style={styles.instructionsContainer}>
+        {instructionsList.map((instruction, index) => (
+          <TextInput
+            key={index}
+            label={`Instrução ${index + 1}`}
+            value={instruction}
+            onChangeText={(value) => updateInstruction(index, value)}
+            mode="outlined"
+            style={styles.input}
+            left={<TextInput.Icon icon="script-text" />}
+          />
+        ))}
+        <Button mode="outlined" onPress={addInstruction} style={styles.button}>
+          Adicionar Instrução
+        </Button>
+      </View>
       <TextInput
         label="Tempo de Preparo (em minutos)"
         value={time}
@@ -167,7 +235,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
         style={styles.input}
         left={<TextInput.Icon icon="account-group" />}
       />
-
       <View style={styles.menuContainer}>
         <Menu
           visible={menuVisible}
@@ -182,7 +249,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
             <Menu.Item
               key={item.value}
               onPress={() => {
-                console.log('Classificação selecionada:', item.value); // Verificar a classificação selecionada
                 setClassification(item.value);
                 setMenuVisible(false);
               }}
@@ -191,25 +257,22 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
           ))}
         </Menu>
       </View>
-
       {image ? (
         <Image source={{ uri: image }} style={styles.image} />
-      ) : null}
-
+      ) : (
+        <Image source={defaultImage} style={styles.image} />
+      )}
       <Button mode="outlined" onPress={pickImage} style={styles.button}>
         Escolher Imagem da Galeria
       </Button>
-
       <Button mode="outlined" onPress={takePhoto} style={styles.button}>
         Tirar Foto
       </Button>
-
       {errorMessage ? (
         <HelperText type="error" visible={!!errorMessage} style={styles.error}>
           {errorMessage}
         </HelperText>
       ) : null}
-
       <Button
         mode="contained"
         onPress={handleSubmit}
@@ -227,13 +290,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 16,
     backgroundColor: '#f9f9f9',
-  },
-  title: {
-    fontSize: 28,
-    textAlign: 'center',
-    marginBottom: 16,
-    fontWeight: 'bold',
-    color: '#333',
   },
   input: {
     marginBottom: 12,
@@ -265,6 +321,40 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     marginBottom: 12,
+  },
+  ingredientsContainer: {
+    marginBottom: 12,
+  },
+  instructionsContainer: {
+    marginBottom: 12,
+  },
+  ingredientRow: {
+    flexDirection: 'column',
+    marginBottom: 12,
+  },
+  ingredientNameInput: {
+    marginBottom: 8,
+  },
+  quantityUnitRow: {
+    flexDirection: 'row',
+    marginBottom: 8,
+  },
+  ingredientSmallInput: {
+    flex: 1,
+    marginRight: 8,
+  },
+  removeButton: {
+    marginTop: 8,
+    backgroundColor: '#FF6B6B',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    alignItems: 'center',
+  },
+  removeButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });
 

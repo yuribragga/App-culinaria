@@ -1,45 +1,63 @@
 import React, { useEffect, useState } from 'react';
-import { View, Alert, ActivityIndicator, Text, StyleSheet, Button, FlatList } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator, Alert, Button } from 'react-native';
 import api from '../services/api';
 import RecipeForm from '../components/RecipeForm';
 
 const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, route }) => {
   const { id } = route.params;
   const [recipe, setRecipe] = useState<any>(null);
-  const [recipes, setRecipes] = useState<any[]>([]); // Todas as receitas
-  const [filteredRecipes, setFilteredRecipes] = useState<any[]>([]); // Receitas filtradas
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [classification, setClassification] = useState<string>(''); // Classificação selecionada
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
 
-  const classifications = [
-    { label: 'Fitness', value: 'Fitness' },
-    { label: 'Alto Carboidrato', value: 'Alto Carboidrato' },
-    { label: 'Saudável', value: 'Saudável' },
-    { label: 'Vegano', value: 'Vegano' },
-    { label: 'Vegetariano', value: 'Vegetariano' },
-  ];
+  // Função para buscar os detalhes da receita
+  const fetchRecipeDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get(`/recipes/${id}`);
+      const recipeData = response.data.recipe;
 
-  useEffect(() => {
-    const fetchRecipe = async () => {
-      try {
-        const response = await api.get(`/recipes/${id}`);
-        setRecipe(response.data.recipe);
-        setRecipes(response.data.recipe); // Carregar todas as receitas
-        setFilteredRecipes(response.data.recipe); // Inicialmente, todas as receitas são exibidas
-      } catch (error: any) {
-        console.error('Erro ao carregar receita:', error.response?.data || error.message);
-        setError('Erro ao carregar a receita. Tente novamente mais tarde.');
-      } finally {
-        setLoading(false);
+      // Verifica se as instruções são uma string e converte para um array
+      if (typeof recipeData.instructions === 'string') {
+        recipeData.instructions = recipeData.instructions.split(',');
       }
-    };
 
-    fetchRecipe();
-  }, [id]);
+      // Certifique-se de que os ingredientes são um array de objetos
+      if (!Array.isArray(recipeData.ingredients)) {
+        recipeData.ingredients = [];
+      }
 
+      setRecipe(recipeData);
+
+      const isFav = favorites.some((fav) => fav.id === id);
+      setIsFavorite(isFav);
+    } catch (error) {
+      console.error('Erro ao buscar detalhes da receita:', error);
+      setError('Erro ao carregar os detalhes da receita.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Função para atualizar a receita
   const handleUpdate = async (recipeData: any) => {
     try {
+      console.log('Dados antes do envio:', recipeData);
+
+      // Converte os ingredientes para uma string separada por vírgulas
+      recipeData.ingredients = recipeData.ingredients
+        .map((ingredient: { name: string; quantity: string; unit: string }) =>
+          `${ingredient.name} ${ingredient.quantity} ${ingredient.unit}`.trim()
+        )
+        .filter((ingredient: string) => ingredient !== '') // Remove ingredientes vazios
+        .join(',');
+
+      // Converte as instruções para uma string separada por vírgulas
+      recipeData.instructions = recipeData.instructions.join(',');
+
+      console.log('Dados após conversão:', recipeData);
+
       await api.put(`/recipes/${id}`, recipeData);
       Alert.alert('Receita atualizada com sucesso');
       navigation.goBack();
@@ -49,6 +67,7 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
     }
   };
 
+  // Função para deletar a receita
   const handleDelete = async () => {
     Alert.alert(
       'Confirmar Exclusão',
@@ -73,15 +92,9 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
     );
   };
 
-  const handleFilter = (value: string) => {
-    setClassification(value); // Atualiza a classificação selecionada
-    if (value) {
-      const filtered = recipes.filter((recipe) => recipe.classification === value);
-      setFilteredRecipes(filtered); // Atualiza as receitas filtradas
-    } else {
-      setFilteredRecipes(recipes); // Exibe todas as receitas se nenhuma classificação for selecionada
-    }
-  };
+  useEffect(() => {
+    fetchRecipeDetails();
+  }, [id]);
 
   if (loading) {
     return (
@@ -110,33 +123,12 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
 
   return (
     <View style={styles.container}>
-      {/* Dropdown para Classificação */}
-      <View style={styles.dropdownContainer}>
-        <Text style={styles.dropdownLabel}>Filtrar por Classificação:</Text>
-        {classifications.map((item) => (
-          <Button
-            key={item.value}
-            title={item.label}
-            onPress={() => handleFilter(item.value)}
-            color={classification === item.value ? '#9BC584' : '#ccc'}
-          />
-        ))}
-      </View>
-
-      {/* Lista de Receitas Filtradas */}
-      <FlatList
-        data={filteredRecipes}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.recipeCard}>
-            <Text style={styles.recipeName}>{item.name}</Text>
-            <Text style={styles.recipeDescription}>{item.description}</Text>
-          </View>
-        )}
-      />
-
       <RecipeForm
-        initialValues={recipe}
+        initialValues={{
+          ...recipe,
+          ingredients: recipe.ingredients || [{ name: '', quantity: '', unit: '' }], // Garante valores padrão
+          instructions: recipe.instructions || [''], // Garante valores padrão
+        }}
         onSubmit={handleUpdate}
         submitButtonLabel="Atualizar Receita"
         navigation={navigation}
@@ -167,29 +159,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'red',
     textAlign: 'center',
-  },
-  dropdownContainer: {
-    marginBottom: 16,
-  },
-  dropdownLabel: {
-    fontSize: 16,
-    marginBottom: 8,
-  },
-  recipeCard: {
-    padding: 16,
-    marginVertical: 8,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  recipeName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  recipeDescription: {
-    fontSize: 14,
-    color: '#555',
   },
 });
 

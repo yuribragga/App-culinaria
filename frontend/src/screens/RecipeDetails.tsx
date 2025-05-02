@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Image, ActivityIndicator, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -11,8 +11,8 @@ interface Recipe {
   name: string;
   description: string;
   image: string;
-  ingredients: string[];
-  instructions: string;
+  ingredients: { name: string; quantity: string; unit: string }[];
+  instructions: string | string[];
   time: number;
   servings: number;
   classification: string;
@@ -38,7 +38,13 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
     try {
       setLoading(true);
       const response = await api.get(`/recipes/${id}`);
-      setRecipe(response.data.recipe);
+      const recipeData = response.data.recipe;
+
+      if (typeof recipeData.instructions === 'string') {
+        recipeData.instructions = recipeData.instructions.split(',');
+      }
+
+      setRecipe(recipeData);
 
       const isFav = favorites.some((fav) => fav.id === id);
       setIsFavorite(isFav);
@@ -46,7 +52,7 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
       console.error('Erro ao buscar detalhes da receita:', error);
       setError('Erro ao carregar os detalhes da receita.');
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -87,6 +93,31 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
         alert('Erro ao atualizar favoritos.');
       }
       console.error('Erro ao atualizar favoritos:', error);
+    }
+  };
+
+  const handleUpdate = async (recipeData: any) => {
+    try {
+      console.log('Dados antes do envio:', recipeData);
+
+      // Converte os ingredientes para uma string separada por vírgulas
+      recipeData.ingredients = recipeData.ingredients
+        .map((ingredient: { name: string; quantity: string; unit: string }) =>
+          `${ingredient.name} ${ingredient.quantity} ${ingredient.unit}`
+        )
+        .join(',');
+
+      // Converte as instruções para uma string separada por vírgulas
+      recipeData.instructions = recipeData.instructions.join(',');
+
+      console.log('Dados após conversão:', recipeData);
+
+      await api.put(`/recipes/${id}`, recipeData);
+      Alert.alert('Receita atualizada com sucesso');
+      navigation.goBack();
+    } catch (error: any) {
+      console.error('Erro ao atualizar receita:', error.response?.data || error.message);
+      Alert.alert('Erro ao atualizar receita');
     }
   };
 
@@ -140,6 +171,13 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
         </TouchableOpacity>
       )}
 
+      <TouchableOpacity
+        style={styles.editButton}
+        onPress={() => navigation.navigate('RecipeStepByStep', { recipe })}
+      >
+        <Text style={styles.editButtonText}>Seguir Receita</Text>
+      </TouchableOpacity>
+
       <Text style={styles.recipeClassiification}>#{recipe.classification}</Text>
       
       <View style={styles.header}>
@@ -156,14 +194,12 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
       </View>
       <Text style={styles.recipeDescription}>{recipe.description}</Text>
 
-
-
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Ingredientes</Text>
         {Array.isArray(recipe.ingredients) && recipe.ingredients.length > 0 ? (
           recipe.ingredients.map((ingredient, index) => (
             <Text key={index} style={styles.ingredient}>
-              - {ingredient}
+              - {ingredient.name} {ingredient.quantity} {ingredient.unit}
             </Text>
           ))
         ) : (
@@ -173,7 +209,17 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Instruções</Text>
-        <Text style={styles.instructions}>{recipe.instructions}</Text>
+        {Array.isArray(recipe.instructions) && recipe.instructions.length > 0 ? (
+          recipe.instructions.map((instruction, index) => (
+            <View key={index} style={styles.listItem}>
+              <Text style={styles.instructions}>
+                {index + 1}. {instruction}
+              </Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.info}>Nenhuma instrução disponível.</Text>
+        )}
       </View>
 
       <View style={styles.section}>
@@ -257,6 +303,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  listItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
   ingredient: {
