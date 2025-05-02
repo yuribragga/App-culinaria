@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Image, Alert } from 'react-native';
-import { TextInput, Button, Title, HelperText, Menu } from 'react-native-paper';
+import { TextInput, Button, Title, HelperText, Menu, List } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
-const defaultImage = require('../../assets/images/imagem_padrao.jpg'); // Imagem padrão para receitas sem imagem
+const defaultImage = require('../../assets/images/default-image.jpeg'); // Imagem padrão para receitas sem imagem
 
 interface RecipeFormProps {
   initialValues?: {
@@ -21,8 +21,6 @@ interface RecipeFormProps {
 }
 
 const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submitButtonLabel, navigation }) => {
-
-
   const [name, setName] = useState(initialValues?.name || '');
   const [description, setDescription] = useState(initialValues?.description || '');
   const [ingredientsList, setIngredientsList] = useState<{ name: string; quantity: string; unit: string }[]>(
@@ -39,6 +37,8 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
   const [classification, setClassification] = useState(initialValues?.classification || '');
   const [menuVisible, setMenuVisible] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [ingredientsExpanded, setIngredientsExpanded] = useState(false);
+  const [instructionsExpanded, setInstructionsExpanded] = useState(false);
 
   const classifications = [
     { label: 'Fitness', value: 'Fitness' },
@@ -156,8 +156,12 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
         multiline
         left={<TextInput.Icon icon="text" />}
       />
-      <View style={styles.ingredientsContainer}>
-        <Title>Ingredientes</Title>
+      <List.Accordion
+        title="Ingredientes"
+        expanded={ingredientsExpanded}
+        onPress={() => setIngredientsExpanded(!ingredientsExpanded)}
+        style={styles.accordion}
+      >
         {ingredientsList.map((ingredient, index) => (
           <View key={index} style={styles.ingredientRow}>
             <TextInput
@@ -200,8 +204,13 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
         <Button mode="outlined" onPress={addIngredient} style={styles.button}>
           Adicionar Ingrediente
         </Button>
-      </View>
-      <View style={styles.instructionsContainer}>
+      </List.Accordion>
+      <List.Accordion
+        title="Instruções"
+        expanded={instructionsExpanded}
+        onPress={() => setInstructionsExpanded(!instructionsExpanded)}
+        style={styles.accordion}
+      >
         {instructionsList.map((instruction, index) => (
           <TextInput
             key={index}
@@ -216,7 +225,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
         <Button mode="outlined" onPress={addInstruction} style={styles.button}>
           Adicionar Instrução
         </Button>
-      </View>
+      </List.Accordion>
       <TextInput
         label="Tempo de Preparo (em minutos)"
         value={time}
@@ -322,11 +331,9 @@ const styles = StyleSheet.create({
   menuContainer: {
     marginBottom: 12,
   },
-  ingredientsContainer: {
+  accordion: {
     marginBottom: 12,
-  },
-  instructionsContainer: {
-    marginBottom: 12,
+    backgroundColor: '#f0f0f0',
   },
   ingredientRow: {
     flexDirection: 'column',

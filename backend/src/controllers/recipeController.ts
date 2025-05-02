@@ -122,21 +122,45 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
     const { name, description, ingredients, instructions, time, servings, image } = req.body;
 
     const recipeRepository = AppDataSource.getRepository(Recipe);
-    const recipe = await recipeRepository.findOne({ where: { id: parseInt(id, 10) } });
+    const ingredientRepository = AppDataSource.getRepository(Ingredient);
+
+    // Busca a receita existente
+    const recipe = await recipeRepository.findOne({
+      where: { id: parseInt(id, 10) },
+      relations: ['ingredients'], // Inclui os ingredientes existentes
+    });
 
     if (!recipe) {
       res.status(404).json({ message: 'Receita não encontrada' });
       return;
     }
 
+    // Atualiza os campos da receita
     recipe.name = name || recipe.name;
     recipe.description = description || recipe.description;
-    recipe.ingredients = ingredients || recipe.ingredients;
     recipe.instructions = instructions || recipe.instructions;
     recipe.time = time || recipe.time;
     recipe.servings = servings || recipe.servings;
     recipe.image = image || recipe.image;
 
+    // Remove os ingredientes antigos
+    await ingredientRepository.delete({ recipe: { id: recipe.id } });
+
+    // Adiciona os novos ingredientes
+    if (Array.isArray(ingredients)) {
+      const newIngredients = ingredients.map((ingredient: { name: string; quantity: string; unit: string }) =>
+        ingredientRepository.create({
+          name: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+          recipe,
+        })
+      );
+
+      await ingredientRepository.save(newIngredients);
+    }
+
+    // Salva a receita atualizada
     await recipeRepository.save(recipe);
 
     res.status(200).json({ message: 'Receita atualizada com sucesso', recipe });

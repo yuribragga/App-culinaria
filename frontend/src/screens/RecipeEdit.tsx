@@ -45,16 +45,19 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
     try {
       console.log('Dados antes do envio:', recipeData);
 
-      // Converte os ingredientes para uma string separada por vírgulas
-      recipeData.ingredients = recipeData.ingredients
-        .map((ingredient: { name: string; quantity: string; unit: string }) =>
-          `${ingredient.name} ${ingredient.quantity} ${ingredient.unit}`.trim()
-        )
-        .filter((ingredient: string) => ingredient !== '') // Remove ingredientes vazios
-        .join(',');
+      // Certifique-se de que os ingredientes estão no formato correto
+      recipeData.ingredients = recipeData.ingredients.map(
+        (ingredient: { name: string; quantity: string; unit: string }) => ({
+          name: ingredient.name.trim(),
+          quantity: ingredient.quantity.trim(),
+          unit: ingredient.unit.trim(),
+        })
+      );
 
-      // Converte as instruções para uma string separada por vírgulas
-      recipeData.instructions = recipeData.instructions.join(',');
+      // Certifique-se de que as instruções estão no formato correto
+      recipeData.instructions = Array.isArray(recipeData.instructions)
+        ? recipeData.instructions
+        : recipeData.instructions.split(',');
 
       console.log('Dados após conversão:', recipeData);
 
