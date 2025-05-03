@@ -36,7 +36,6 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
 
     const savedRecipe = await recipeRepository.save(newRecipe);
 
-    // Salva os ingredientes vinculados à receita
     if (Array.isArray(ingredients)) {
       const ingredientEntities = ingredients.map((ingredient: { name: string; quantity: number; unit: string }) =>
         ingredientRepository.create({
@@ -124,10 +123,9 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
     const recipeRepository = AppDataSource.getRepository(Recipe);
     const ingredientRepository = AppDataSource.getRepository(Ingredient);
 
-    // Busca a receita existente
     const recipe = await recipeRepository.findOne({
       where: { id: parseInt(id, 10) },
-      relations: ['ingredients'], // Inclui os ingredientes existentes
+      relations: ['ingredients'], 
     });
 
     if (!recipe) {
@@ -139,7 +137,6 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
     console.log('Ingredientes existentes:', recipe.ingredients);
     console.log('Ingredientes recebidos:', ingredients);
 
-    // Atualiza os campos da receita
     recipe.name = name || recipe.name;
     recipe.description = description || recipe.description;
     recipe.instructions = instructions || recipe.instructions;
@@ -147,15 +144,12 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
     recipe.servings = servings || recipe.servings;
     recipe.image = image || recipe.image;
 
-    // Atualiza os ingredientes
     if (Array.isArray(ingredients)) {
       const existingIngredients = recipe.ingredients;
 
-      // Atualiza ou cria novos ingredientes
       const updatedIngredients = [];
       for (const ingredient of ingredients) {
         if (ingredient.id) {
-          // Atualiza o ingrediente existente
           const existingIngredient = existingIngredients.find((ing) => ing.id === ingredient.id);
           if (existingIngredient) {
             existingIngredient.name = ingredient.name;
@@ -164,18 +158,18 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
             updatedIngredients.push(existingIngredient);
           }
         } else {
-          // Cria um novo ingrediente e associa à receita
+
           const newIngredient = ingredientRepository.create({
             name: ingredient.name,
             quantity: ingredient.quantity,
             unit: ingredient.unit,
-            recipe, // Associa o ingrediente à receita
+            recipe,
           });
           updatedIngredients.push(await ingredientRepository.save(newIngredient));
         }
       }
 
-      // Remove ingredientes que não estão mais no payload
+
       const ingredientIds = ingredients.map((ingredient) => ingredient.id).filter(Boolean);
       const ingredientsToRemove = existingIngredients.filter((ing) => !ingredientIds.includes(ing.id));
       if (ingredientsToRemove.length > 0) {
@@ -183,11 +177,9 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
         await ingredientRepository.remove(ingredientsToRemove);
       }
 
-      // Atualiza a lista de ingredientes da receita
       recipe.ingredients = updatedIngredients;
     }
 
-    // Salva a receita atualizada
     await recipeRepository.save(recipe);
 
     res.status(200).json({ message: 'Receita atualizada com sucesso', recipe });

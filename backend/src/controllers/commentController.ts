@@ -4,7 +4,6 @@ import { Comment } from '../entities/comments';
 import { Recipe } from '../entities/Recipe';
 import { User } from '../entities/User';
 
-// Adicionar um comentário
 export const addComment = async (req: Request, res: Response): Promise<void> => {
   const { recipeId, userId, text } = req.body;
 
