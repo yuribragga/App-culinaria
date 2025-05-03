@@ -24,11 +24,11 @@ const RecipeList: React.FC<{ navigation: any }> = ({ navigation }) => {
 
   const classifications = [
     { label: 'Todos', value: '' },
-    { label: 'Fitness', value: 'Fitness' },
-    { label: 'Alto Carboidrato', value: 'Alto Carboidrato' },
-    { label: 'Saudável', value: 'Saudável' },
-    { label: 'Vegano', value: 'Vegano' },
-    { label: 'Vegetariano', value: 'Vegetariano' },
+    { label: 'Doce', value: 'Doce' },
+    { label: 'Salgado', value: 'Salgado' },
+    { label: 'Bebida', value: 'Bebida' },
+    { label: 'Sobremesa', value: 'Sobremesa' },
+    { label: 'Lanche', value: 'Lanche' },
   ];
 
   const fetchRecipes = async (classification?: string) => {

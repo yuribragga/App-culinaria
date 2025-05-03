@@ -6,6 +6,7 @@ import recipeRoutes from './routes/recipeRoutes';
 import favoriteRoutes from './routes/favoriteRoutes';
 import dotenv from 'dotenv';
 import { recipeImageMiddleware } from './middlewares/uploadMiddleware';
+import commentRoutes from './routes/commentRouts';
 
 dotenv.config();
 
@@ -19,6 +20,8 @@ app.use('/auth', authRoutes);
 app.use('/recipes', recipeImageMiddleware, recipeRoutes);
 
 app.use('/favorites', favoriteRoutes);
+
+app.use('/comments', commentRoutes);
 
 AppDataSource.initialize()
   .then(() => {

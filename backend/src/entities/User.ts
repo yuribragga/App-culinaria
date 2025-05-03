@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, JoinTable, ManyToMany } from 'typeorm';
 import { Recipe } from './Recipe';
+import { Comment } from './comments'; // Import da entidade Comment
 
 @Entity()
 export class User {
@@ -33,4 +34,7 @@ export class User {
   @ManyToMany(() => Recipe)
   @JoinTable()
   favorites!: Recipe[];
+
+  @OneToMany(() => Comment, (comment) => comment.user, { cascade: true })
+  comments!: Comment[];
 }

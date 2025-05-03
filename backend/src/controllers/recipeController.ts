@@ -135,6 +135,10 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
+    console.log('Payload recebido no updateRecipe:', req.body);
+    console.log('Ingredientes existentes:', recipe.ingredients);
+    console.log('Ingredientes recebidos:', ingredients);
+
     // Atualiza os campos da receita
     recipe.name = name || recipe.name;
     recipe.description = description || recipe.description;
@@ -143,21 +147,44 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
     recipe.servings = servings || recipe.servings;
     recipe.image = image || recipe.image;
 
-    // Remove os ingredientes antigos
-    await ingredientRepository.delete({ recipe: { id: recipe.id } });
-
-    // Adiciona os novos ingredientes
+    // Atualiza os ingredientes
     if (Array.isArray(ingredients)) {
-      const newIngredients = ingredients.map((ingredient: { name: string; quantity: string; unit: string }) =>
-        ingredientRepository.create({
-          name: ingredient.name,
-          quantity: ingredient.quantity,
-          unit: ingredient.unit,
-          recipe,
-        })
-      );
+      const existingIngredients = recipe.ingredients;
 
-      await ingredientRepository.save(newIngredients);
+      // Atualiza ou cria novos ingredientes
+      const updatedIngredients = [];
+      for (const ingredient of ingredients) {
+        if (ingredient.id) {
+          // Atualiza o ingrediente existente
+          const existingIngredient = existingIngredients.find((ing) => ing.id === ingredient.id);
+          if (existingIngredient) {
+            existingIngredient.name = ingredient.name;
+            existingIngredient.quantity = ingredient.quantity;
+            existingIngredient.unit = ingredient.unit;
+            updatedIngredients.push(existingIngredient);
+          }
+        } else {
+          // Cria um novo ingrediente e associa à receita
+          const newIngredient = ingredientRepository.create({
+            name: ingredient.name,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            recipe, // Associa o ingrediente à receita
+          });
+          updatedIngredients.push(await ingredientRepository.save(newIngredient));
+        }
+      }
+
+      // Remove ingredientes que não estão mais no payload
+      const ingredientIds = ingredients.map((ingredient) => ingredient.id).filter(Boolean);
+      const ingredientsToRemove = existingIngredients.filter((ing) => !ingredientIds.includes(ing.id));
+      if (ingredientsToRemove.length > 0) {
+        console.log('Ingredientes a serem removidos:', ingredientsToRemove);
+        await ingredientRepository.remove(ingredientsToRemove);
+      }
+
+      // Atualiza a lista de ingredientes da receita
+      recipe.ingredients = updatedIngredients;
     }
 
     // Salva a receita atualizada

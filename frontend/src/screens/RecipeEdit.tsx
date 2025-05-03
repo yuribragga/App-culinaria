@@ -8,30 +8,22 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
   const [recipe, setRecipe] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [favorites, setFavorites] = useState<any[]>([]);
-  const [isFavorite, setIsFavorite] = useState<boolean>(false);
 
-  // Função para buscar os detalhes da receita
   const fetchRecipeDetails = async () => {
     try {
       setLoading(true);
       const response = await api.get(`/recipes/${id}`);
       const recipeData = response.data.recipe;
 
-      // Verifica se as instruções são uma string e converte para um array
       if (typeof recipeData.instructions === 'string') {
-        recipeData.instructions = recipeData.instructions.split(',');
+        recipeData.instructions = recipeData.instructions.split(',').map((instruction: string) => instruction.trim());
       }
 
-      // Certifique-se de que os ingredientes são um array de objetos
       if (!Array.isArray(recipeData.ingredients)) {
         recipeData.ingredients = [];
       }
 
       setRecipe(recipeData);
-
-      const isFav = favorites.some((fav) => fav.id === id);
-      setIsFavorite(isFav);
     } catch (error) {
       console.error('Erro ao buscar detalhes da receita:', error);
       setError('Erro ao carregar os detalhes da receita.');
@@ -40,28 +32,20 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
     }
   };
 
-  // Função para atualizar a receita
   const handleUpdate = async (recipeData: any) => {
     try {
       console.log('Dados antes do envio:', recipeData);
 
-      // Certifique-se de que os ingredientes estão no formato correto
       recipeData.ingredients = recipeData.ingredients.map(
-        (ingredient: { name: string; quantity: string; unit: string }) => ({
-          name: ingredient.name.trim(),
-          quantity: ingredient.quantity.trim(),
-          unit: ingredient.unit.trim(),
+        (ingredient: { id?: number; name: string; quantity: string; unit: string }) => ({
+          ...ingredient,
+          recipeId: recipeData.id,
         })
       );
 
-      // Certifique-se de que as instruções estão no formato correto
-      recipeData.instructions = Array.isArray(recipeData.instructions)
-        ? recipeData.instructions
-        : recipeData.instructions.split(',');
-
       console.log('Dados após conversão:', recipeData);
 
-      await api.put(`/recipes/${id}`, recipeData);
+      await api.put(`/recipes/${recipeData.id}`, recipeData);
       Alert.alert('Receita atualizada com sucesso');
       navigation.goBack();
     } catch (error: any) {
@@ -70,7 +54,7 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
     }
   };
 
-  // Função para deletar a receita
+
   const handleDelete = async () => {
     Alert.alert(
       'Confirmar Exclusão',
@@ -129,8 +113,9 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
       <RecipeForm
         initialValues={{
           ...recipe,
-          ingredients: recipe.ingredients || [{ name: '', quantity: '', unit: '' }], // Garante valores padrão
-          instructions: recipe.instructions || [''], // Garante valores padrão
+          id: recipe.id,
+          ingredients: recipe.ingredients || [{ name: '', quantity: '', unit: '' }],
+          instructions: recipe.instructions || [''], 
         }}
         onSubmit={handleUpdate}
         submitButtonLabel="Atualizar Receita"

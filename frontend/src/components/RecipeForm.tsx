@@ -6,6 +6,7 @@ const defaultImage = require('../../assets/images/default-image.jpeg'); // Image
 
 interface RecipeFormProps {
   initialValues?: {
+    id?: string;
     name: string;
     description: string;
     ingredients: { name: string; quantity: string; unit: string }[];
@@ -41,11 +42,11 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
   const [instructionsExpanded, setInstructionsExpanded] = useState(false);
 
   const classifications = [
-    { label: 'Fitness', value: 'Fitness' },
-    { label: 'Alto Carboidrato', value: 'Alto Carboidrato' },
-    { label: 'Saudável', value: 'Saudável' },
-    { label: 'Vegano', value: 'Vegano' },
-    { label: 'Vegetariano', value: 'Vegetariano' },
+    { label: 'Doce', value: 'Doce' },
+    { label: 'Salgado', value: 'Salgado' },
+    { label: 'Bebida', value: 'Bebida' },
+    { label: 'Sobremesa', value: 'Sobremesa' },
+    { label: 'Lanche', value: 'Lanche' },
   ];
 
   const pickImage = async () => {
@@ -115,17 +116,18 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
     }
 
     const recipeData = {
+      id: initialValues?.id,
       name,
       description,
       ingredients: ingredientsList,
       instructions: instructionsList,
       time: Number(time),
       servings: Number(servings),
-      image: image || Image.resolveAssetSource(defaultImage).uri, // Usa a imagem padrão se nenhuma for selecionada
+      image: image || Image.resolveAssetSource(defaultImage).uri,
       classification,
     };
 
-    console.log('Dados enviados para o backend:', recipeData);
+    console.log('Dados enviados no handleSubmit:', recipeData);
 
     try {
       await onSubmit(recipeData);
@@ -163,34 +165,37 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
         style={styles.accordion}
       >
         {ingredientsList.map((ingredient, index) => (
-          <View key={index} style={styles.ingredientRow}>
+            <View key={index} style={styles.ingredientRow}>
             <TextInput
               label="Nome"
               value={ingredient.name}
-              onChangeText={(value) => updateIngredient(index, 'name', value)}
+              onChangeText={(value: string) => updateIngredient(index, 'name', value)}
               mode="outlined"
               style={[styles.input, styles.ingredientNameInput]}
               left={<TextInput.Icon icon="format-list-bulleted" />}
             />
-            <View style={styles.quantityUnitRow}>
-              <TextInput
-                label="Quantidade"
-                value={ingredient.quantity}
-                onChangeText={(value) => updateIngredient(index, 'quantity', value)}
-                mode="outlined"
-                style={[styles.input, styles.ingredientSmallInput]}
-                keyboardType="numeric"
-                left={<TextInput.Icon icon="scale" />}
-              />
-              <TextInput
-                label="Unidade"
-                value={ingredient.unit}
-                onChangeText={(value) => updateIngredient(index, 'unit', value)}
-                mode="outlined"
-                style={[styles.input, styles.ingredientSmallInput]}
-                left={<TextInput.Icon icon="ruler" />}
-              />
-            </View>
+            <TextInput
+              label="Quantidade"
+              value={ingredient.quantity}
+              onChangeText={(value: string) => {
+
+              const numericValue = value.replace(/[^0-9]/g, '');
+              updateIngredient(index, 'quantity', numericValue);
+              }}
+              mode="outlined"
+              style={[styles.input, styles.ingredientSmallInput]}
+              keyboardType="numeric"
+              maxLength={7} 
+              left={<TextInput.Icon icon="scale" />}
+            />
+            <TextInput
+              label="Unidade"
+              value={ingredient.unit}
+              onChangeText={(value: string) => updateIngredient(index, 'unit', value)}
+              mode="outlined"
+              style={[styles.input, styles.ingredientSmallInput]}
+              left={<TextInput.Icon icon="ruler" />}
+            />
             <Button
               mode="text"
               onPress={() => removeIngredient(index)}

@@ -12,6 +12,7 @@ import RecipeDetails from './frontend/src/screens/RecipeDetails';
 import { LogBox } from 'react-native';
 import Toast from 'react-native-toast-message';
 import RecipeStepByStep from './frontend/src/screens/RecipeStepByStep';
+import ShoppingList from './frontend/src/screens/ShoppingList';
 
 LogBox.ignoreLogs([
   'Warning: CountryModal: Support for defaultProps will be removed',
@@ -69,7 +70,28 @@ const App = () => {
                 },
               }}
             />
-            <Stack.Screen name="RecipeStepByStep" component={RecipeStepByStep} />
+            <Stack.Screen name="RecipeStepByStep" component={RecipeStepByStep} options={{
+                headerShown: true,
+                title: 'Passo a Passo',
+                headerStyle: {
+                  backgroundColor: '#9BC584',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+            }} />
+            <Stack.Screen name="ShoppingList" component={ShoppingList} options={{
+                headerShown: true,
+                title: '',
+                headerStyle: {
+                  backgroundColor: '#9BC584',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                }, 
+              }} />
           </Stack.Navigator>
         </NavigationContainer>
       </AuthProvider>

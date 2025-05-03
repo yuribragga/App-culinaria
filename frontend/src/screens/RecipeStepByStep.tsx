@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 
 interface RecipeStepByStepProps {
   route: any;
@@ -7,20 +7,9 @@ interface RecipeStepByStepProps {
 }
 
 const RecipeStepByStep: React.FC<RecipeStepByStepProps> = ({ route, navigation }) => {
-  const { recipe } = route.params; // Recebe a receita como parâmetro
-  const [adjustedServings, setAdjustedServings] = useState(recipe.servings);
+  const { recipe } = route.params; 
   const [completedSteps, setCompletedSteps] = useState<boolean[]>(Array(recipe.instructions.length).fill(false));
 
-  // Calcula os ingredientes ajustados com base nas porções
-  const calculateAdjustedIngredients = () => {
-    const factor = adjustedServings / recipe.servings;
-    return recipe.ingredients.map((ingredient: { name: string; quantity: string; unit: string }) => {
-      const adjustedQuantity = (parseFloat(ingredient.quantity) * factor).toFixed(2);
-      return `${ingredient.name} ${adjustedQuantity} ${ingredient.unit}`;
-    });
-  };
-
-  // Marca ou desmarca um passo como concluído
   const toggleStepCompletion = (index: number) => {
     const updatedSteps = [...completedSteps];
     updatedSteps[index] = !updatedSteps[index];
@@ -29,32 +18,8 @@ const RecipeStepByStep: React.FC<RecipeStepByStepProps> = ({ route, navigation }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Título da Receita */}
       <Text style={styles.title}>{recipe.name}</Text>
 
-      {/* Ajuste de Porções */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Ajustar Porções</Text>
-        <TextInput
-          style={styles.input}
-          value={adjustedServings.toString()}
-          onChangeText={(value) => setAdjustedServings(Number(value))}
-          keyboardType="numeric"
-        />
-        <Text style={styles.info}>Porções originais: {recipe.servings}</Text>
-      </View>
-
-      {/* Ingredientes Ajustados */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Ingredientes</Text>
-        {calculateAdjustedIngredients().map((ingredient: string, index: number) => (
-          <Text key={index} style={styles.ingredient}>
-            - {ingredient}
-          </Text>
-        ))}
-      </View>
-
-      {/* Passo a Passo */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Passo a Passo</Text>
         {recipe.instructions.map((instruction: string, index: number) => (
@@ -85,10 +50,13 @@ const RecipeStepByStep: React.FC<RecipeStepByStepProps> = ({ route, navigation }
         ))}
       </View>
 
-      {/* Botão Voltar */}
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backButtonText}>Voltar</Text>
+      <TouchableOpacity
+        style={styles.shoppingListButton}
+        onPress={() => navigation.navigate('ShoppingList', { recipe })}
+      >
+        <Text style={styles.shoppingListButtonText}>Ir para Lista de Compras</Text>
       </TouchableOpacity>
+
     </ScrollView>
   );
 };
@@ -122,24 +90,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 12,
     color: '#555',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 16,
-    marginBottom: 8,
-    backgroundColor: '#f7f7f7',
-  },
-  info: {
-    fontSize: 16,
-    color: '#666',
-  },
-  ingredient: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 4,
   },
   step: {
     flexDirection: 'row',
@@ -186,14 +136,14 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     color: '#999',
   },
-  backButton: {
-    backgroundColor: '#9BC584',
+  shoppingListButton: {
+    backgroundColor: '#604490',
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 16,
   },
-  backButtonText: {
+  shoppingListButtonText: {
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,

@@ -1,11 +1,12 @@
 import React, { useState, useContext } from 'react';
-import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Animated, Text } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import { AuthContext } from '../services/AuthContext'; 
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 const CircularMenu: React.FC<{ navigation: any }> = ({ navigation }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hoveredButton, setHoveredButton] = useState<string | null>(null); // Estado para controlar o botão pressionado
   const rotation = new Animated.Value(0);
   const { isLoggedIn } = useContext(AuthContext);
 
@@ -34,24 +35,36 @@ const CircularMenu: React.FC<{ navigation: any }> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.optionButton}
             onPress={() => navigation.navigate('RecipeCreate')}
+            onPressIn={() => setHoveredButton('Criar Receita')} // Exibe o texto "Criar Receita"
+            onPressOut={() => setHoveredButton(null)} // Oculta o texto
           >
             <AntDesign name="plus" size={24} color="white" />
           </TouchableOpacity>
+          {hoveredButton === 'Criar Receita' && <Text style={styles.hoverText}>Criar Receita</Text>}
 
           <TouchableOpacity
             style={styles.optionButton}
             onPress={() => navigation.navigate('RecipeListbyUser')}
+            onPressIn={() => setHoveredButton('Minhas Receitas')} // Exibe o texto "Minhas Receitas"
+            onPressOut={() => setHoveredButton(null)} // Oculta o texto
           >
             <AntDesign name="bars" size={24} color="white" />
           </TouchableOpacity>
+          {hoveredButton === 'Minhas Receitas' && <Text style={styles.hoverText}>Minhas Receitas</Text>}
         </View>
       )}
 
-      <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
+      <TouchableOpacity
+        style={styles.menuButton}
+        onPress={toggleMenu}
+        onPressIn={() => setHoveredButton('Menu')} // Exibe o texto "Menu"
+        onPressOut={() => setHoveredButton(null)} // Oculta o texto
+      >
         <Animated.View style={{ transform: [{ rotate: rotateInterpolation }] }}>
           <Ionicons name="ellipsis-horizontal-circle-sharp" size={64} color="#9BC584" />
         </Animated.View>
       </TouchableOpacity>
+      {hoveredButton === 'Menu' && <Text style={styles.hoverText}>Menu</Text>}
     </View>
   );
 };
@@ -80,6 +93,21 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     elevation: 5,
+  },
+  hoverText: {
+    position: 'absolute',
+    left: -120, // Move o texto para o lado esquerdo
+    top: '50%', // Centraliza verticalmente em relação ao botão
+    transform: [{ translateY: -10 }], // Ajusta o alinhamento vertical
+    color: '#9BC584',
+    fontSize: 14,
+    fontWeight: 'bold',
+    backgroundColor: 'white',
+    padding: 6,
+    borderRadius: 8,
+    elevation: 5,
+    textAlign: 'center',
+    width: 100, // Define uma largura fixa para o texto
   },
 });
 
