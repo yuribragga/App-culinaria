@@ -31,10 +31,10 @@ Foco: Expandir a usabilidade do aplicativo com interações sociais e integraç�
 
 * 🔹 Compartilhamento de receitas com outros usuários ou redes sociais.
 * 🔹 Avaliações por usuário
-* 🔸 Planejamento de refeições para uma semana e geração de lista consolidada.
-* 🔸 Sistema de recomendações de receitas baseadas no histórico e preferências do usuário.
-* 🔸 Receitas em diferentes idiomas para uma comunidade internacional.
-* 🔸 GPS para encontrar mercados próximos com os ingredientes da lista de compras.
+* 🔹 Planejamento de refeições para uma semana e geração de lista consolidada.
+* 🔹 Sistema de recomendações de receitas baseadas no histórico e preferências do usuário.
+* 🔹 Receitas em diferentes idiomas para uma comunidade internacional.
+* 🔹 GPS para encontrar mercados próximos com os ingredientes da lista de compras.
 * 🔸 Integração com a câmera para escanear códigos de barras e adicionar produtos à lista.
 * 🔸 Criação de planos de refeições para dietas específicas (vegana, low-carb, etc.).
 * 🔸 Lembretes para horários de preparo das refeições planejadas.

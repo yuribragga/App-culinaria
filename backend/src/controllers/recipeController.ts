@@ -3,7 +3,7 @@ import { AppDataSource } from '../data-source';
 import { Recipe } from '../entities/Recipe';
 import { User } from '../entities/User';
 import { Ingredient } from '../entities/Ingredient'; // Importe a entidade Ingredient
-import { Rating } from '../entities/rating';
+import { Rating } from '../entities/Rating';
 
 export const createRecipe = async (req: Request, res: Response): Promise<void> => {
   try {

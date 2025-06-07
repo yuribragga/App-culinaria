@@ -51,6 +51,26 @@ const CircularMenu: React.FC<{ navigation: any }> = ({ navigation }) => {
             <AntDesign name="bars" size={24} color="white" />
           </TouchableOpacity>
           {hoveredButton === 'Minhas Receitas' && <Text style={styles.hoverText}>Minhas Receitas</Text>}
+
+          <TouchableOpacity
+            style={styles.optionButton}
+            onPress={() => navigation.navigate('MealPlanScreen')}
+            onPressIn={() => setHoveredButton('Planejamento')} // Exibe o texto "Planejamento"
+            onPressOut={() => setHoveredButton(null)} // Oculta o texto
+          >
+            <Ionicons name="calendar" size={24} color="white" />
+          </TouchableOpacity>
+          {hoveredButton === 'Planejamento' && <Text style={styles.hoverText}>Planejamento</Text>}
+
+          <TouchableOpacity
+            style={styles.optionButton}
+            onPress={() => navigation.navigate('RecommendationsScreen')}
+            onPressIn={() => setHoveredButton('Recomendações')} // Exibe o texto "Recomendações"
+            onPressOut={() => setHoveredButton(null)} // Oculta o texto
+          >
+            <AntDesign name="star" size={24} color="white" />
+          </TouchableOpacity>
+          {hoveredButton === 'Recomendações' && <Text style={styles.hoverText}>Recomendações</Text>}
         </View>
       )}
 
@@ -80,6 +100,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 70,
     alignItems: 'center',
+    zIndex: 1000,
   },
   optionButton: {
     backgroundColor: '#9BC584',
@@ -88,7 +109,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 18, // Aumentado o espaçamento entre os botões
     elevation: 5,
   },
   menuButton: {

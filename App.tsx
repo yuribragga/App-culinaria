@@ -13,6 +13,9 @@ import { LogBox } from 'react-native';
 import Toast from 'react-native-toast-message';
 import RecipeStepByStep from './frontend/src/screens/RecipeStepByStep';
 import ShoppingList from './frontend/src/screens/ShoppingList';
+import MealPlanScreen from './frontend/src/screens/MealPlanScreen';
+import MealPlanItemsScreen from './frontend/src/screens/MealPlanItemsScreen';
+import RecommendationsScreen from './frontend/src/screens/RecommendationsScreen';
 
 LogBox.ignoreLogs([
   'Warning: CountryModal: Support for defaultProps will be removed',
@@ -45,7 +48,7 @@ const App = () => {
               component={RecipeDetails}
               options={{
                 headerShown: true,
-                title: 'Editar Receita',
+                title: 'Detalhes da Receita',
                 headerStyle: {
                   backgroundColor: '#9BC584',
                 },
@@ -70,7 +73,10 @@ const App = () => {
                 },
               }}
             />
-            <Stack.Screen name="RecipeStepByStep" component={RecipeStepByStep} options={{
+            <Stack.Screen
+              name="RecipeStepByStep"
+              component={RecipeStepByStep}
+              options={{
                 headerShown: true,
                 title: 'Passo a Passo',
                 headerStyle: {
@@ -81,7 +87,10 @@ const App = () => {
                   fontWeight: 'bold',
                 },
             }} />
-            <Stack.Screen name="ShoppingList" component={ShoppingList} options={{
+            <Stack.Screen
+              name="ShoppingList"
+              component={ShoppingList}
+              options={{
                 headerShown: true,
                 title: '',
                 headerStyle: {
@@ -92,6 +101,49 @@ const App = () => {
                   fontWeight: 'bold',
                 }, 
               }} />
+            <Stack.Screen
+              name="MealPlanScreen"
+              component={MealPlanScreen}
+              options={{
+                headerShown: true,
+                title: 'Planejamento Semanal',
+                headerStyle: {
+                  backgroundColor: '#9BC584',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+              }} />
+            <Stack.Screen
+              name="MealPlanItemsScreen"
+              component={MealPlanItemsScreen}
+              options={{
+                headerShown: true,
+                title: 'Itens do Planejamento',
+                headerStyle: {
+                  backgroundColor: '#9BC584',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+              }} />
+            <Stack.Screen
+              name="RecommendationsScreen"
+              component={RecommendationsScreen}
+              options={{
+                headerShown: true,
+                title: 'Recomendações',
+                headerStyle: {
+                  backgroundColor: '#9BC584',
+                },
+                headerTintColor: '#fff',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
+              }}
+            />
           </Stack.Navigator>
         </NavigationContainer>
       </AuthProvider>

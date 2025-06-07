@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 
 interface ShoppingListProps {
   route: any;
@@ -16,11 +16,12 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ route, navigation }) => {
     Array(recipe.ingredients.length).fill(0)
   ); 
 
+  const isConsolidated = recipe.name === 'Lista Consolidada';
 
   const calculateIngredients = () => {
-    return recipe.ingredients.map((ingredient: { name: string; quantity: number; unit: string }) => ({
+    return recipe.ingredients.map((ingredient: { name: string; quantity: number | string; unit: string }) => ({
       ...ingredient,
-      quantity: (ingredient.quantity / recipe.servings) * servings,
+      quantity: Number(ingredient.quantity), // só garante que é número
     }));
   };
 
@@ -39,30 +40,42 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ route, navigation }) => {
 
   const adjustedIngredients = calculateIngredients();
 
+  const handleFindMarkets = async () => {
+    const url = 'https://www.google.com/maps/search/mercado/';
+    const supported = await Linking.canOpenURL(url);
+    if (supported) {
+      Linking.openURL(url);
+    } else {
+      Alert.alert('Erro', 'Não foi possível abrir o Google Maps.');
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Lista de Compras (Opcional) </Text>
 
-      <View style={styles.servingsContainer}>
-        <Text style={styles.servingsLabel}>Porções:</Text>
-        <TouchableOpacity
-          style={styles.servingsButton}
-          onPress={() => setServings(servings + 1)}
-        >
-          <Text style={styles.servingsButtonText}>+</Text>
-        </TouchableOpacity>
-        <Text style={styles.servingsValue}>{servings}</Text>
-        <TouchableOpacity
-          style={styles.servingsButton}
-          onPress={() => setServings(servings > 1 ? servings - 1 : 1)}
-        >
-          <Text style={styles.servingsButtonText}>-</Text>
-        </TouchableOpacity>
-      </View>
+      {!isConsolidated && (
+        <View style={styles.servingsContainer}>
+          <Text style={styles.servingsLabel}>Porções:</Text>
+          <TouchableOpacity
+            style={styles.servingsButton}
+            onPress={() => setServings(servings + 1)}
+          >
+            <Text style={styles.servingsButtonText}>+</Text>
+          </TouchableOpacity>
+          <Text style={styles.servingsValue}>{servings}</Text>
+          <TouchableOpacity
+            style={styles.servingsButton}
+            onPress={() => setServings(servings > 1 ? servings - 1 : 1)}
+          >
+            <Text style={styles.servingsButtonText}>-</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Ingredientes</Text>
-        {recipe.ingredients.map((ingredient: { name: string; quantity: number; unit: string }, index: number) => (
+        {adjustedIngredients.map((ingredient: { name: string; quantity: number; unit: string }, index: number) => (
           <View
             key={index}
             style={[
@@ -86,7 +99,7 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ route, navigation }) => {
                   checkedIngredients[index] ? styles.ingredientTextChecked : styles.ingredientTextUnchecked,
                 ]}
               >
-                - {ingredient.name}: {adjustedIngredients[index].quantity.toFixed(2)} {ingredient.unit}
+                - {ingredient.name}: {ingredient.quantity.toFixed(2)} {ingredient.unit}
               </Text>
               {purchasedQuantities[index] > 0 && (
                 <Text style={styles.purchasedText}>
@@ -97,6 +110,12 @@ const ShoppingList: React.FC<ShoppingListProps> = ({ route, navigation }) => {
           </View>
         ))}
       </View>
+
+      {!isConsolidated && (
+        <TouchableOpacity style={styles.marketButton} onPress={handleFindMarkets}>
+          <Text style={styles.marketButtonText}>Encontrar mercados próximos</Text>
+        </TouchableOpacity>
+      )}
     </ScrollView>
   );
 };
@@ -220,6 +239,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#555',
     marginTop: 4,
+  },
+  marketButton: {
+    backgroundColor: '#604490',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  marketButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 
