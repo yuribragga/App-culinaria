@@ -17,20 +17,20 @@ Foco: Criar a base do aplicativo com as principais funcionalidades para uso inic
 Entrega 2 - Funcionalidades Avançadas
 
 Foco: Melhorar a experiência do usuário com personalização e automação.
-* 🔹 Melhoria da interface
-* 🔹 Melhoria do motor de busca(por café da manhã, almoço, café da tarde e jantar)
-* 🔹 Lista de compras automática baseada nos ingredientes das receitas.
-* 🔹 Marcar ingredientes como "já comprado" na lista de compras.
-* 🔹 Ajuste automático de ingredientes com base no número de porções desejadas.
-* 🔹 Passo a passo interativo para marcar cada etapa concluída no preparo da receita.
-* 🔹 Comentários de receitas por usuários.
+* ✅ Melhoria da interface
+* ✅ Melhoria do motor de busca(por café da manhã, almoço, café da tarde e jantar)
+* ✅ Lista de compras automática baseada nos ingredientes das receitas.
+* ✅ Marcar ingredientes como "já comprado" na lista de compras.
+* ✅ Ajuste automático de ingredientes com base no número de porções desejadas.
+* ✅ Passo a passo interativo para marcar cada etapa concluída no preparo da receita.
+* ✅ Comentários de receitas por usuários.
 
 Entrega 3 - Funcionalidades Extras e Integrações
 
 Foco: Expandir a usabilidade do aplicativo com interações sociais e integração com dispositivos.
 
-* 🔸 Compartilhamento de receitas com outros usuários ou redes sociais.
-* 🔸 Avaliações por usuário
+* 🔹 Compartilhamento de receitas com outros usuários ou redes sociais.
+* 🔹 Avaliações por usuário
 * 🔸 Planejamento de refeições para uma semana e geração de lista consolidada.
 * 🔸 Sistema de recomendações de receitas baseadas no histórico e preferências do usuário.
 * 🔸 Receitas em diferentes idiomas para uma comunidade internacional.

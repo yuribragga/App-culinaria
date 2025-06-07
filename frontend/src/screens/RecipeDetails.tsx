@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator, ScrollView, TouchableOpacity, Alert, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Image, ActivityIndicator, ScrollView, TouchableOpacity, Alert, TextInput, Share } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import api from '../services/api';
 import { AuthContext } from '../services/AuthContext';
+import * as FileSystem from 'expo-file-system';
 
 interface Recipe {
   id: number;
@@ -43,6 +44,11 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loadingComments, setLoadingComments] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [userRatingComment, setUserRatingComment] = useState('');
+  const [ratingLoading, setRatingLoading] = useState(false);
+  const [ratingError, setRatingError] = useState<string | null>(null);
+  const [ratings, setRatings] = useState<any[]>([]);
 
   const fetchRecipeDetails = async () => {
     try {
@@ -92,6 +98,23 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
     }
   };
 
+  const fetchRatings = async () => {
+    try {
+      const res = await api.get(`/recipes/${id}/ratings`);
+      // Garante que ratings sempre será um array
+      if (Array.isArray(res.data.ratings)) {
+        setRatings(res.data.ratings);
+      } else if (Array.isArray(res.data)) {
+        setRatings(res.data);
+      } else {
+        setRatings([]);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar avaliações:', error);
+      setRatings([]); // Garante que nunca será undefined
+    }
+  };
+
   const handleAddComment = async () => {
     if (!newComment.trim()) return;
 
@@ -111,11 +134,37 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
     }
   };
 
+  const handleSendRating = async () => {
+    if (userRating === 0) return;
+
+    try {
+      setRatingLoading(true);
+      const response = await api.post(`/recipes/${id}/ratings`, {
+        stars: userRating,
+        comment: userRatingComment,
+      });
+      console.log('Resposta ao enviar avaliação:', response.data);
+      setUserRating(0);
+      setUserRatingComment('');
+      fetchRatings();
+    } catch (error) {
+      if (error instanceof Error) {
+        setRatingError((error as any).response?.data?.message || error.message);
+      } else {
+        setRatingError('Erro desconhecido ao enviar avaliação.');
+      }
+      console.error('Erro ao enviar avaliação:', error);
+    } finally {
+      setRatingLoading(false);
+    }
+  };
+
   useFocusEffect(
     React.useCallback(() => {
       fetchLoggedInUserId();
       fetchRecipeDetails();
       fetchComments(); 
+      fetchRatings();
     }, [id, favorites])
   );
 
@@ -139,11 +188,31 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
     }
   };
 
+  const handleShare = async () => {
+    try {
+      const url = `https://10.0.2.2:3000//recipes/${recipe?.id}`;
+      const message = `Confira esta receita: ${recipe?.name}\n${url}`;
+      await Share.share({
+        message,
+        url,
+        title: `Confira esta receita: ${recipe?.name}`,
+      });
+    } catch (error) {
+      Alert.alert('Erro ao compartilhar o link da receita.');
+    }
+  };
+
   const getFlagEmoji = (isoCode: string) => {
     if (!isoCode) return '🏳️';
     return isoCode
       .toUpperCase()
       .replace(/./g, (char) => String.fromCodePoint(127397 + char.charCodeAt(0)));
+  };
+
+  const getAverageRating = () => {
+    if (!Array.isArray(ratings) || ratings.length === 0) return 0;
+    const total = ratings.reduce((sum, r) => sum + (r.stars || 0), 0);
+    return (total / ratings.length).toFixed(1);
   };
 
   if (loading) {
@@ -292,6 +361,97 @@ const RecipeDetails: React.FC<{ route: any; navigation: any }> = ({ route, navig
           </TouchableOpacity>
         </View>
       )}
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Avalie esta receita</Text>
+        {isLoggedIn ? (
+          <>
+            <View style={{ flexDirection: 'row', marginBottom: 8 }}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => setUserRating(star)}
+                  style={{ marginHorizontal: 2 }}
+                >
+                  <Icon
+                    name={userRating >= star ? 'star' : 'star-border'}
+                    size={32}
+                    color="#FFD700"
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TextInput
+              style={[styles.commentInput, { marginBottom: 8 }]}
+              placeholder="Deixe um comentário (opcional)"
+              value={userRatingComment}
+              onChangeText={setUserRatingComment}
+            />
+            <TouchableOpacity
+              style={styles.addCommentButton}
+              onPress={handleSendRating}
+              disabled={userRating === 0 || ratingLoading}
+            >
+              <Text style={styles.addCommentButtonText}>
+                {ratingLoading ? 'Enviando...' : 'Enviar Avaliação'}
+              </Text>
+            </TouchableOpacity>
+            {ratingError ? (
+              <Text style={{ color: 'red', marginTop: 4 }}>{ratingError}</Text>
+            ) : null}
+          </>
+        ) : (
+          <Text style={styles.info}>Faça login para avaliar esta receita.</Text>
+        )}
+      </View>
+
+      {/* Exibir avaliações */}
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Avaliações</Text>
+        {Array.isArray(ratings) && ratings.length === 0 ? (
+          <Text style={styles.info}>Nenhuma avaliação ainda.</Text>
+        ) : (
+          Array.isArray(ratings) && ratings.map((rating, idx) => (
+            <View key={idx} style={{ marginBottom: 8 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Icon
+                    key={star}
+                    name={rating.stars >= star ? 'star' : 'star-border'}
+                    size={20}
+                    color="#FFD700"
+                  />
+                ))}
+                <Text style={{ marginLeft: 8, fontWeight: 'bold' }}>{rating.user?.name || 'Usuário'}</Text>
+              </View>
+              {rating.comment ? (
+                <Text style={{ color: '#333', marginLeft: 2 }}>{rating.comment}</Text>
+              ) : null}
+            </View>
+          ))
+        )}
+      </View>
+
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Icon
+            key={star}
+            name={Number(getAverageRating()) >= star ? 'star' : 'star-border'}
+            size={24}
+            color="#FFD700"
+          />
+        ))}
+        <Text style={{ marginLeft: 8, fontWeight: 'bold', fontSize: 16 }}>
+          {getAverageRating()} / 5
+        </Text>
+        <Text style={{ marginLeft: 8, color: '#666' }}>
+          ({ratings.length} avaliação{ratings.length === 1 ? '' : 's'})
+        </Text>
+      </View>
+
+      <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
+        <Text style={styles.shareButtonText}>Compartilhar Receita</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -467,6 +627,18 @@ const styles = StyleSheet.create({
   paginationInfo: {
     fontSize: 16,
     color: '#333',
+  },
+  shareButton: {
+    backgroundColor: '#9BC584',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  shareButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

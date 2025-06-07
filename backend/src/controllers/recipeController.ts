@@ -3,6 +3,7 @@ import { AppDataSource } from '../data-source';
 import { Recipe } from '../entities/Recipe';
 import { User } from '../entities/User';
 import { Ingredient } from '../entities/Ingredient'; // Importe a entidade Ingredient
+import { Rating } from '../entities/rating';
 
 export const createRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -243,6 +244,50 @@ export const getRecipesByUserId = async (req: Request, res: Response): Promise<v
   } catch (error) {
     console.error('Erro ao buscar receitas por ID do usuário:', error);
     res.status(500).json({ message: 'Erro no servidor' });
+  }
+};
+
+
+export const addRating = async (req: Request, res: Response) => {
+  const { recipeId } = req.params;
+  const { stars, comment } = req.body;
+  if (!req.user || !req.user.id) {
+    return res.status(401).json({ message: 'Usuário não autenticado.' });
+  }
+  const userId = req.user.id;
+
+  if (!stars || stars < 1 || stars > 5) {
+    return res.status(400).json({ message: 'Avaliação deve ser entre 1 e 5 estrelas.' });
+  }
+
+  try {
+    const ratingRepo = AppDataSource.getRepository(Rating);
+    const recipeRepo = AppDataSource.getRepository(Recipe);
+
+    const recipe = await recipeRepo.findOneBy({ id: Number(recipeId) });
+    if (!recipe) return res.status(404).json({ message: 'Receita não encontrada.' });
+
+    // Um usuário só pode avaliar uma vez cada receita
+    const existing = await ratingRepo.findOne({ where: { user: { id: userId }, recipe: { id: Number(recipeId) } } });
+    if (existing) return res.status(400).json({ message: 'Você já avaliou esta receita.' });
+
+    const rating = ratingRepo.create({ stars, comment, user: { id: userId }, recipe });
+    await ratingRepo.save(rating);
+
+    return res.status(201).json(rating);
+  } catch (error) {
+    return res.status(500).json({ message: 'Erro ao salvar avaliação.' });
+  }
+};
+
+export const getRecipeRatings = async (req: Request, res: Response) => {
+  const { recipeId } = req.params;
+  try {
+    const ratingRepo = AppDataSource.getRepository(Rating);
+    const ratings = await ratingRepo.find({ where: { recipe: { id: Number(recipeId) } }, relations: ['user'] });
+    return res.json(ratings);
+  } catch (error) {
+    return res.status(500).json({ message: 'Erro ao buscar avaliações.' });
   }
 };
 
