@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert, Modal, TextInput, FlatList, Pressable } from 'react-native';
 import api from '../services/api';
+import * as Calendar from 'expo-calendar';
 
 const days = [
   'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'
@@ -32,12 +33,19 @@ const MealPlanScreen = ({ navigation }: any) => {
     }), {} as any)
   );
   const [modalVisible, setModalVisible] = useState(false);
+  const [timeModalVisible, setTimeModalVisible] = useState(false);
   const [modalDay, setModalDay] = useState<string | null>(null);
   const [modalMeal, setModalMeal] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [recipes, setRecipes] = useState<any[]>([]);
   const [filteredRecipes, setFilteredRecipes] = useState<any[]>([]);
   const [recipesLoading, setRecipesLoading] = useState(true);
+  const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
+  const [selectedTime, setSelectedTime] = useState('12:00');
+  const [selectedDate, setSelectedDate] = useState('01/01/2025'); 
+  const [openDays, setOpenDays] = useState<{ [key: string]: boolean }>(
+    days.reduce((acc, day) => ({ ...acc, [day]: false }), {})
+  );
 
   useEffect(() => {
     const loadData = async () => {
@@ -70,7 +78,7 @@ const MealPlanScreen = ({ navigation }: any) => {
     setModalMeal(meal);
     setModalVisible(true);
     setSearch('');
-    setFilteredRecipes(recipes); // <-- Mostra todas as receitas ao abrir o modal
+    setFilteredRecipes(recipes);
   };
 
   const handleSave = async () => {
@@ -101,11 +109,34 @@ const MealPlanScreen = ({ navigation }: any) => {
     setModalVisible(false);
   };
 
-  const handleConsolidateList = async () => {
+  const handleSelectRecipeWithTime = async (recipeId: number, time: string) => {
+    if (modalDay && modalMeal) {
+      setWeekPlan((prev: any) => ({
+        ...prev,
+        [modalDay]: {
+          ...prev[modalDay],
+          [modalMeal]: { recipeId: Number(recipeId), time }
+        }
+      }));
 
+      const recipe = recipes.find(r => r.id === recipeId);
+      if (recipe) {
+        const [day, month, year] = selectedDate.split('/');
+        const [hh, mm] = selectedTime.split(':');
+        const eventDate = new Date(Number(year), Number(month) - 1, Number(day), Number(hh), Number(mm), 0);
+
+        await criarEventoNoCalendario(`Preparar: ${recipe.name}`, eventDate);
+        Alert.alert('Evento criado no calendário!');
+      }
+    }
+  };
+
+  const handleConsolidateList = async () => {
     const selectedIds = days.flatMap(day =>
-      mealTypes.map(meal => weekPlan[day][meal])
-    ).filter(id => id !== null && id !== undefined);
+      mealTypes
+        .map(meal => weekPlan[day][meal]?.recipeId)
+        .filter(id => id !== null && id !== undefined)
+    );
 
     const receitasDetalhadas = await Promise.all(
       selectedIds.map(async (id) => {
@@ -118,15 +149,12 @@ const MealPlanScreen = ({ navigation }: any) => {
       })
     );
 
-    // Filtre receitas válidas
     const validas = receitasDetalhadas.filter(Boolean);
 
-    // Consolide os ingredientes
     const ingredientes = consolidarIngredientes(validas);
 
-
     navigation.navigate('MealPlanItemsScreen', {
-      ingredients: ingredientes, 
+      ingredients: ingredientes,
     });
   };
 
@@ -151,6 +179,30 @@ const MealPlanScreen = ({ navigation }: any) => {
     }));
   }
 
+  async function criarEventoNoCalendario(titulo: string, data: Date) {
+    const { status } = await Calendar.requestCalendarPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permissão negada', 'Não foi possível acessar o calendário.');
+      return;
+    }
+    const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+    const defaultCalendar = calendars.find(cal => cal.allowsModifications);
+    if (!defaultCalendar) {
+      Alert.alert('Erro', 'Nenhum calendário disponível.');
+      return;
+    }
+    await Calendar.createEventAsync(defaultCalendar.id, {
+      title: titulo,
+      startDate: data,
+      endDate: new Date(data.getTime() + 60 * 60 * 1000),
+      timeZone: 'America/Sao_Paulo',
+      notes: 'Lembrete criado pelo App Culinária',
+    });
+  }
+
+  const toggleDay = (day: string) => {
+    setOpenDays(prev => ({ ...prev, [day]: !prev[day] }));
+  };
 
   if (recipesLoading) {
     return (
@@ -165,22 +217,34 @@ const MealPlanScreen = ({ navigation }: any) => {
       <Text style={styles.title}>Planejamento Semanal de Refeições</Text>
       {days.map(day => (
         <View key={day} style={styles.dayContainer}>
-          <Text style={styles.dayTitle}>{dayLabels[day]}</Text>
-          {mealTypes.map(meal => (
-            <TouchableOpacity
-              key={meal}
-              style={styles.mealButton}
-              onPress={() => selectRecipe(day, meal)}
-            >
-              <Text style={styles.mealLabel}>
-                {mealLabels[meal]}: {
-                  weekPlan[day][meal]
-                    ? (recipes.find(r => String(r.id) === String(weekPlan[day][meal]))?.name || 'Selecionar')
-                    : 'Selecionar'
-                }
-              </Text>
-            </TouchableOpacity>
-          ))}
+          <TouchableOpacity
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+            onPress={() => toggleDay(day)}
+          >
+            <Text style={styles.dayTitle}>{dayLabels[day]}</Text>
+            <Text style={{ fontSize: 18 }}>
+              {openDays[day] ? '▲' : '▼'}
+            </Text>
+          </TouchableOpacity>
+          {openDays[day] && (
+            <View>
+              {mealTypes.map(meal => (
+                <TouchableOpacity
+                  key={meal}
+                  style={styles.mealButton}
+                  onPress={() => selectRecipe(day, meal)}
+                >
+                  <Text style={styles.mealLabel}>
+                    {mealLabels[meal]}: {
+                      weekPlan[day][meal]
+                        ? (recipes.find(r => String(r.id) === String(weekPlan[day][meal]?.recipeId))?.name || 'Selecionar')
+                        : 'Selecionar'
+                    }{weekPlan[day][meal]?.time && ` - ${weekPlan[day][meal].time}`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
         </View>
       ))}
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
@@ -236,7 +300,10 @@ const MealPlanScreen = ({ navigation }: any) => {
                       borderBottomWidth: 1,
                       borderBottomColor: '#eee'
                     }}
-                    onPress={() => handleSelectRecipe(item.id)}
+                    onPress={() => {
+                      setSelectedRecipeId(item.id);
+                      setTimeModalVisible(true);
+                    }}
                   >
                     <Text>{item.name}</Text>
                   </Pressable>
@@ -254,6 +321,84 @@ const MealPlanScreen = ({ navigation }: any) => {
               onPress={() => setModalVisible(false)}
             >
               <Text style={{ color: '#604490', fontWeight: 'bold' }}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      <Modal
+        visible={timeModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setTimeModalVisible(false)}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0,0,0,0.5)',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 10,
+            padding: 20,
+            width: '80%',
+            alignItems: 'center'
+          }}>
+            <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 10 }}>Digite a data (DD/MM/AAAA)</Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: '#ccc',
+                borderRadius: 8,
+                padding: 8,
+                width: 120,
+                textAlign: 'center',
+                fontSize: 18,
+                marginBottom: 8,
+              }}
+              placeholder="01/01/2025"
+              keyboardType="numeric"
+              maxLength={10}
+              value={selectedDate}
+              onChangeText={setSelectedDate}
+            />
+            <Text style={{ fontWeight: 'bold', fontSize: 18, marginBottom: 10 }}>Digite o horário (HH:mm)</Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: '#ccc',
+                borderRadius: 8,
+                padding: 8,
+                width: 120,
+                textAlign: 'center',
+                fontSize: 18,
+                marginBottom: 8,
+              }}
+              placeholder="12:00"
+              keyboardType="numeric"
+              maxLength={5}
+              value={selectedTime}
+              onChangeText={setSelectedTime}
+            />
+            <TouchableOpacity
+              style={{
+                marginTop: 16,
+                backgroundColor: '#9BC584',
+                padding: 12,
+                borderRadius: 8,
+                alignItems: 'center'
+              }}
+              onPress={async () => {
+                if (selectedRecipeId && modalDay && modalMeal) {
+                  await handleSelectRecipeWithTime(selectedRecipeId, selectedTime);
+                  setSelectedRecipeId(null);
+                  setTimeModalVisible(false);
+                  setModalVisible(false);
+                }
+              }}
+            >
+              <Text style={{ color: '#fff', fontWeight: 'bold' }}>Confirmar</Text>
             </TouchableOpacity>
           </View>
         </View>

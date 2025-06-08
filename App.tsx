@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -24,6 +24,8 @@ LogBox.ignoreLogs([
 const Stack = createStackNavigator();
 
 const App = () => {
+
+
   return (
     <PaperProvider>
       <AuthProvider>

@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { User } from './User';
 
-// Exemplo de entidade (TypeORM)
 @Entity()
 export class MealPlan {
   @PrimaryGeneratedColumn()
@@ -10,17 +9,16 @@ export class MealPlan {
   @Column()
   userId!: number;
 
-  // Se quiser relação direta:
   @ManyToOne(() => User, user => user.mealPlans)
   user!: User;
 
   @Column('simple-json')
   week!: {
     [day: string]: {
-      breakfast?: number; 
-      lunch?: number;
-      snack?: number;
-      dinner?: number;
+      breakfast?: { recipeId: number, time: string | null };
+      lunch?: { recipeId: number, time: string | null };
+      snack?: { recipeId: number, time: string | null };
+      dinner?: { recipeId: number, time: string | null };
     };
   };
 }

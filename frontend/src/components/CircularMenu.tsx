@@ -65,8 +65,8 @@ const CircularMenu: React.FC<{ navigation: any }> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.optionButton}
             onPress={() => navigation.navigate('RecommendationsScreen')}
-            onPressIn={() => setHoveredButton('Recomendações')} // Exibe o texto "Recomendações"
-            onPressOut={() => setHoveredButton(null)} // Oculta o texto
+            onPressIn={() => setHoveredButton('Recomendações')} 
+            onPressOut={() => setHoveredButton(null)} 
           >
             <AntDesign name="star" size={24} color="white" />
           </TouchableOpacity>
@@ -77,8 +77,8 @@ const CircularMenu: React.FC<{ navigation: any }> = ({ navigation }) => {
       <TouchableOpacity
         style={styles.menuButton}
         onPress={toggleMenu}
-        onPressIn={() => setHoveredButton('Menu')} // Exibe o texto "Menu"
-        onPressOut={() => setHoveredButton(null)} // Oculta o texto
+        onPressIn={() => setHoveredButton('Menu')} 
+        onPressOut={() => setHoveredButton(null)} 
       >
         <Animated.View style={{ transform: [{ rotate: rotateInterpolation }] }}>
           <Ionicons name="ellipsis-horizontal-circle-sharp" size={64} color="#9BC584" />
