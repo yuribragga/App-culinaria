@@ -14,11 +14,14 @@
       "supportsTablet": true
     },
     "android": {
-      "adaptiveIcon": {
-      
-      }
+      "adaptiveIcon": {},
+      "package": "com.yuribraga.MeuAppDeReceitas"
     },
-    "web": {
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "6e40bfba-3933-43fc-89a4-a87357a7644e"
+      }
     }
   }
 }
