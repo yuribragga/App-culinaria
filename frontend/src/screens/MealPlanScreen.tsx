@@ -25,6 +25,14 @@ const dayLabels: Record<string, string> = {
   sunday: 'Domingo',
 };
 
+const getTodayDate = () => {
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, '0');
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const yyyy = today.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+};
+
 const MealPlanScreen = ({ navigation }: any) => {
   const [weekPlan, setWeekPlan] = useState(
     days.reduce((acc, day) => ({
@@ -42,7 +50,7 @@ const MealPlanScreen = ({ navigation }: any) => {
   const [recipesLoading, setRecipesLoading] = useState(true);
   const [selectedRecipeId, setSelectedRecipeId] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState('12:00');
-  const [selectedDate, setSelectedDate] = useState('01/01/2025'); 
+  const [selectedDate, setSelectedDate] = useState(getTodayDate()); 
   const [openDays, setOpenDays] = useState<{ [key: string]: boolean }>(
     days.reduce((acc, day) => ({ ...acc, [day]: false }), {})
   );

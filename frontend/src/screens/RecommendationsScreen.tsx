@@ -59,6 +59,17 @@ export default function RecommendationsScreen({ navigation }: any) {
     ? getRecommendedRecipes(allRecipes, favorites)
     : allRecipes.slice(0, 10);
 
+  // Filtra receitas que NÃO estão nos favoritos
+  const notFavoriteRecipes = allRecipes.filter(
+    r => !favorites.some(fav => fav.id === r.id)
+  );
+
+  // Seleciona uma receita aleatória que não está nos favoritos
+  const recommendedOne =
+    notFavoriteRecipes.length > 0
+      ? [notFavoriteRecipes[Math.floor(Math.random() * notFavoriteRecipes.length)]]
+      : [];
+
   return (
     <View style={{ flex: 1, padding: 16 }}>
       <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 12 }}>
@@ -68,7 +79,7 @@ export default function RecommendationsScreen({ navigation }: any) {
         <ActivityIndicator size="large" color="#9BC584" />
       ) : (
         <FlatList
-          data={recommended}
+          data={recommendedOne}
           keyExtractor={item => item.id.toString()}
           renderItem={({ item }) => (
             <TouchableOpacity
