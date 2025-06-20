@@ -26,11 +26,8 @@ export class Recipe {
   @Column()
   servings!: number;
 
-  @Column({ type: 'blob', nullable: true })
-  imageData?: Buffer;
-
   @Column({ nullable: true })
-  imageMimeType?: string;
+  image!: string;
 
   @Column()
   classification!: string;

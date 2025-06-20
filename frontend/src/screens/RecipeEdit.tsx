@@ -34,28 +34,18 @@ const RecipeEdit: React.FC<{ navigation: any; route: any }> = ({ navigation, rou
 
   const handleUpdate = async (recipeData: any) => {
     try {
-      // Monta o FormData para envio multipart
-      const formData = new FormData();
-      formData.append('name', recipeData.name);
-      formData.append('description', recipeData.description);
-      formData.append('ingredients', JSON.stringify(recipeData.ingredients));
-      formData.append('instructions', JSON.stringify(recipeData.instructions));
-      formData.append('time', String(recipeData.time));
-      formData.append('servings', String(recipeData.servings));
-      formData.append('classification', recipeData.classification);
+      console.log('Dados antes do envio:', recipeData);
 
-      // Adiciona a imagem, se houver e for local (não URL já salva)
-      if (recipeData.image && !recipeData.image.startsWith('http')) {
-        const filename = recipeData.image.split('/').pop();
-        const match = /\.(\w+)$/.exec(filename ?? '');
-        const mimeType = match ? `image/${match[1]}` : 'image';
-        formData.append('image', { uri: recipeData.image, name: filename, type: mimeType } as any);
-      }
+      recipeData.ingredients = recipeData.ingredients.map(
+        (ingredient: { id?: number; name: string; quantity: string; unit: string }) => ({
+          ...ingredient,
+          recipeId: recipeData.id,
+        })
+      );
 
-      await api.put(`/recipes/${recipeData.id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      console.log('Dados após conversão:', recipeData);
 
+      await api.put(`/recipes/${recipeData.id}`, recipeData);
       Alert.alert('Receita atualizada com sucesso');
       navigation.goBack();
     } catch (error: any) {

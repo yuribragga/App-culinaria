@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Image, Alert } from 'react-native';
 import { TextInput, Button, Title, HelperText, Menu, List } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
-import api from '../services/api'; 
-import { useDispatch } from 'react-redux';
-
-
-const defaultImage = require('../../assets/images/default-image.jpeg'); 
+const defaultImage = require('../../assets/images/default-image.jpeg'); // Imagem padrão para receitas sem imagem
 
 interface RecipeFormProps {
   initialValues?: {
@@ -26,7 +22,6 @@ interface RecipeFormProps {
 }
 
 const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submitButtonLabel, navigation }) => {
-  const dispatch = useDispatch();
   const [name, setName] = useState(initialValues?.name || '');
   const [description, setDescription] = useState(initialValues?.description || '');
   const [ingredientsList, setIngredientsList] = useState<{ name: string; quantity: string; unit: string }[]>(
@@ -53,29 +48,6 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
     { label: 'Sobremesa', value: 'Sobremesa' },
     { label: 'Lanche', value: 'Lanche' },
   ];
-
-  const uploadToServer = async (uri: string, setImage: (url: string) => void) => {
-    const filename = uri.split('/').pop()!;
-    const match = /\.(\w+)$/.exec(filename);
-    const mimeType = match ? `image/${match[1]}` : 'image';
-
-    const formData = new FormData();
-    formData.append('file', { uri, name: filename, type: mimeType } as any);
-
-    try {
-      const res = await api.post('/imagem', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      if (res.data.success && res.data.imagemUrl) {
-        const novaUrl = `${res.data.imagemUrl}?ts=${Date.now()}`;
-        setImage(novaUrl); // Atualiza o estado local da imagem
-        Alert.alert('Sucesso', 'Imagem enviada com sucesso!');
-      } else {
-        Alert.alert('Erro', 'Falha ao enviar imagem.');
-      }
-    } catch (err) {
-      console.error('[FRONT] Erro ao enviar imagem:', err);
-      Alert.alert('Erro', 'Falha ao enviar imagem.');
-    }
-  };
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
