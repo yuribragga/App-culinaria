@@ -29,7 +29,7 @@ app.use('/mealplan', mealPlanRoutes);
 AppDataSource.initialize()
   .then(() => {
     console.log('Banco de dados conectado!');
-    app.listen(3334, '0.0.0.0' () => {
+    app.listen(3334, '0.0.0.0', () => {
       console.log('Servidor rodando na porta 3334');
     });
   })
