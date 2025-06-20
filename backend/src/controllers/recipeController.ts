@@ -7,8 +7,17 @@ import { Rating } from '../entities/Rating';
 
 export const createRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description, ingredients, instructions, time, servings, image, classification } = req.body;
+    // Campos simples
+    const { name, description, time, servings, classification } = req.body;
     const userId = req.user?.id;
+
+    // Parse dos campos JSON
+    const ingredients = JSON.parse(req.body.ingredients || '[]');
+    const instructions = JSON.parse(req.body.instructions || '[]');
+
+    // Imagem
+    const imageData = req.file ? req.file.buffer : undefined;
+    const imageMimeType = req.file ? req.file.mimetype : undefined;
 
     if (!userId) {
       res.status(401).json({ message: 'Usuário não autenticado' });
@@ -27,10 +36,11 @@ export const createRecipe = async (req: Request, res: Response): Promise<void> =
     const newRecipe = recipeRepository.create({
       name,
       description,
-      instructions: Array.isArray(instructions) ? instructions : instructions.split('\n'), // Certifique-se de que é um array
+      instructions,
       time,
       servings,
-      image,
+      imageData,
+      imageMimeType,
       classification,
       user: { id: userId },
     });
@@ -119,14 +129,20 @@ export const getRecipeById = async (req: Request, res: Response): Promise<void> 
 export const updateRecipe = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { name, description, ingredients, instructions, time, servings, image } = req.body;
+    const { name, description, time, servings, classification } = req.body;
+
+    const ingredients = JSON.parse(req.body.ingredients || '[]');
+    const instructions = JSON.parse(req.body.instructions || '[]');
+
+    const imageData = req.file ? req.file.buffer : undefined;
+    const imageMimeType = req.file ? req.file.mimetype : undefined;
 
     const recipeRepository = AppDataSource.getRepository(Recipe);
     const ingredientRepository = AppDataSource.getRepository(Ingredient);
 
     const recipe = await recipeRepository.findOne({
       where: { id: parseInt(id, 10) },
-      relations: ['ingredients'], 
+      relations: ['ingredients'],
     });
 
     if (!recipe) {
@@ -134,16 +150,18 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    console.log('Payload recebido no updateRecipe:', req.body);
-    console.log('Ingredientes existentes:', recipe.ingredients);
-    console.log('Ingredientes recebidos:', ingredients);
-
     recipe.name = name || recipe.name;
     recipe.description = description || recipe.description;
     recipe.instructions = instructions || recipe.instructions;
     recipe.time = time || recipe.time;
     recipe.servings = servings || recipe.servings;
-    recipe.image = image || recipe.image;
+    recipe.classification = classification || recipe.classification;
+
+    if (imageData && imageMimeType) {
+      recipe.imageData = imageData;
+      recipe.imageMimeType = imageMimeType;
+    }
+
 
     if (Array.isArray(ingredients)) {
       const existingIngredients = recipe.ingredients;
@@ -159,7 +177,6 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
             updatedIngredients.push(existingIngredient);
           }
         } else {
-
           const newIngredient = ingredientRepository.create({
             name: ingredient.name,
             quantity: ingredient.quantity,
@@ -170,11 +187,9 @@ export const updateRecipe = async (req: Request, res: Response): Promise<void> =
         }
       }
 
-
       const ingredientIds = ingredients.map((ingredient) => ingredient.id).filter(Boolean);
       const ingredientsToRemove = existingIngredients.filter((ing) => !ingredientIds.includes(ing.id));
       if (ingredientsToRemove.length > 0) {
-        console.log('Ingredientes a serem removidos:', ingredientsToRemove);
         await ingredientRepository.remove(ingredientsToRemove);
       }
 
