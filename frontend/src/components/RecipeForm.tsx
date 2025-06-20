@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, ScrollView, StyleSheet, Image, Alert } from 'react-native';
-import { TextInput, Button, HelperText, Menu, List } from 'react-native-paper';
+import { TextInput, Button, Title, HelperText, Menu, List } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
-import api from '../services/api';
+import api from '../services/api'; 
+import { useDispatch } from 'react-redux';
 
-const defaultImage = require('../../assets/images/default-image.jpeg');
+
+const defaultImage = require('../../assets/images/default-image.jpeg'); 
 
 interface RecipeFormProps {
   initialValues?: {
@@ -24,6 +26,7 @@ interface RecipeFormProps {
 }
 
 const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submitButtonLabel, navigation }) => {
+  const dispatch = useDispatch();
   const [name, setName] = useState(initialValues?.name || '');
   const [description, setDescription] = useState(initialValues?.description || '');
   const [ingredientsList, setIngredientsList] = useState<{ name: string; quantity: string; unit: string }[]>(
@@ -155,23 +158,7 @@ const RecipeForm: React.FC<RecipeFormProps> = ({ initialValues, onSubmit, submit
     console.log('Dados enviados no handleSubmit:', recipeData);
 
     try {
-      const formData = new FormData();
-      formData.append('name', recipeData.name);
-      formData.append('description', recipeData.description);
-      formData.append('ingredients', JSON.stringify(recipeData.ingredients));
-      formData.append('instructions', JSON.stringify(recipeData.instructions));
-      formData.append('time', String(recipeData.time));
-      formData.append('servings', String(recipeData.servings));
-      formData.append('classification', recipeData.classification);
-
-      if (recipeData.image && !recipeData.image.startsWith('http')) {
-        const filename = recipeData.image.split('/').pop();
-        const match = /\.(\w+)$/.exec(filename ?? '');
-        const mimeType = match ? `image/${match[1]}` : 'image';
-        formData.append('image', { uri: recipeData.image, name: filename, type: mimeType } as any);
-      }
-
-      await onSubmit(formData);
+      await onSubmit(recipeData);
       Alert.alert('Sucesso', 'Receita salva com sucesso!');
       navigation.navigate('Main', { screen: 'Recipes' });
     } catch (error: any) {

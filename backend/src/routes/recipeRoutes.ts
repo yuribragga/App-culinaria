@@ -11,7 +11,7 @@ router.get('/', listRecipes);
 router.get('/:id', getRecipeById); 
 
 router.post('/create', authenticateToken, upload.single('image'), createRecipe);
-router.put('/:id', authenticateToken, upload.single('image'), updateRecipe);
+router.put('/:id', authenticateToken,upload.single('image'), updateRecipe);
 router.delete('/:id', authenticateToken, deleteRecipe); 
 router.get('/user/:id', authenticateToken, getRecipesByUserId);
 router.post('/:recipeId/share', shareRecipe);
